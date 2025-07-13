@@ -1,0 +1,142 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1 {
+  color: #C0A080;
+  font-size: 60px;
+  margin-bottom: 20px;
+}
+
+.formcard-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.formcard {
+  background-color: var(--color-cards);
+  border-radius: 25px;
+  padding: 25px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  width: 95%;
+  height: 97vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+}
+
+/* FORMULARIO */
+form {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  gap: 20px; 
+  width: 100%;
+  max-width: 400px;
+}
+
+
+.form-group,
+.usuario {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 6px; 
+}
+
+
+label {
+  font-size: 16px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #ffffff92;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: 'Roboto', sans-serif;
+  transition: border-color 0.3s, box-shadow 0.2s;
+  background-color: transparent;
+  color: white;
+}
+
+input:focus {
+  border-color: var(--color-secondaryfonts);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(192, 160, 128, 0.3);
+}
+
+input::placeholder {
+  color: #999;
+}
+.usuario .form-select {
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.usuario .form-select:focus {
+  border-color: var(--color-fonts);
+  background-color: var(--color-fonts);
+  box-shadow: 0 0 0 0.2rem var(--color-secondaryfonts);
+}
+
+button,
+a.crear {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  transition: background-color 0.2s, transform 0.1s;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  text-align: center;
+}
+
+button {
+  border: none;
+  background-color: var(--color-secondaryfonts);
+  color: var(--color-principal);
+}
+
+button:hover {
+  background-color: var(--color-fonts);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+a.crear {
+  background-color: transparent;
+  color: var(--color-secondaryfonts);
+  border: 2px solid var(--color-fonts);
+  text-decoration: none;
+}
+
+a.crear:hover {
+  background-color: #f0f8ff;
+}

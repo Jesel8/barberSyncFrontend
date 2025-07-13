@@ -1,0 +1,21 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+:root{
+    --color-principal:#252525;
+    --color-cards:#333333;
+    --color-fonts:#FFFFFF;
+    --color-secondaryfonts:#C0A080;
+    --color-thirdfont:#B0B0B0;
+}
+body {
+  background-color: var(--color-principal);
+  color: #C0A080;
+}
+h1{
+  font-family: 'Playfair Display', serif;
+  text-align: center;
+  font-weight: bold;
+}

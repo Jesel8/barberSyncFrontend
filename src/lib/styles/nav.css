@@ -1,0 +1,73 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-one: #1C1C1C;
+    --color-two: #FFFFFF;
+}
+nav.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  z-index: 1100;
+}
+
+
+/* Contenedor principal del nav */
+.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 20px;
+    background-color: var(--color-one);
+}
+
+/* Ícono de menú */
+.menu-icon {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.menu-icon img {
+    height: 30px;
+    width: auto;
+}
+
+/* Logo */
+.logo {
+    margin-left: 20px; /* Espacio entre el ícono de menú y el logo */
+}
+
+.logo img {
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
+/* Ícono de salir (enlace) alineado a la derecha */
+.salir {
+    margin-left: auto; /* Empuja el ícono de salir hacia la derecha */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.salir img {
+    height: 55px;
+    width: auto;
+}
