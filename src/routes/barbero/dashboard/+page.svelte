@@ -18,7 +18,7 @@
 
 <section class="panel-usuario">
   <a href="/barbero/ver-citas" class="card-opcion">
-    <img src="/icons/calendarone.svg" alt="Citas" />
+    <img src="" alt="Citas" />
     <h3>Ver Citas</h3>
     <p>Consulta tus citas agendadas con clientes.</p>
   </a>
@@ -30,7 +30,7 @@
   </a>
 
   <div class="card-opcion" on:click={cerrarSesion}>
-    <img src="/icons/Salir.svg" alt="Salir" />
+    <img src="src\static\assets\icons\Salir.svg" alt="Salir" />
     <h3>Cerrar Sesión</h3>
     <p>Finaliza tu sesión de manera segura.</p>
   </div>

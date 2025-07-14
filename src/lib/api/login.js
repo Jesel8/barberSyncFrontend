@@ -5,7 +5,7 @@ export async function loginUsuario(email, contrasena) {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ email, contrasena }) // 👈 IMPORTANTE
+    body: JSON.stringify({ email, contrasena })
   });
 
   let data;
@@ -19,10 +19,19 @@ export async function loginUsuario(email, contrasena) {
     throw new Error(data.mensaje || 'Error al iniciar sesión');
   }
 
-  // Guardar en localStorage
+  // Guardar datos comunes
   localStorage.setItem('idUsuario', data.idUsuario);
   localStorage.setItem('rol', data.rol);
   localStorage.setItem('nombre', data.nombreCompleto);
+
+  // Guardar ID específico según el rol
+  if (data.rol === 'barbero') {
+    localStorage.setItem('barberoId', data.idUsuario);
+  } else if (data.rol === 'cliente') {
+    localStorage.setItem('clienteId', data.idUsuario);
+  } else if (data.rol === 'admin') {
+    localStorage.setItem('adminId', data.idUsuario);
+  }
 
   return data;
 }

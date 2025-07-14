@@ -69,7 +69,7 @@
   </a>
 
   <a href="/cliente/Historial" class="card-opcion">
-    <img src="/icons/calendarone.svg" alt="Horarios" />
+    <img src="src\static\assets\icons\calendarone.svg" alt="Horarios" />
     <h3>Ver Citas</h3>
     <p>Consulta disponibilidad y reserva tu cita.</p>
   </a>

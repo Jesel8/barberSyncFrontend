@@ -2,9 +2,26 @@
   import '$lib/Styles/Global.css';
   import '$lib/Styles/nav.css';
   import '$lib/Styles/aside.css';
+  import { onMount } from 'svelte';
+  import { obtenerResumenDashboard } from '$lib/api/dashboard.js';
+
+  let totalBarberos = 0;
+  let totalServicios = 0;
+  let totalCitas = 0;
+  let totalResenas = 0;
+
+  onMount(async () => {
+    const resumen = await obtenerResumenDashboard();
+    totalBarberos = resumen.totalBarberos;
+    totalServicios = resumen.totalServicios;
+    totalCitas = resumen.totalCitas;
+    totalResenas = resumen.totalResenas;
+  });
 </script>
 
 <input type="checkbox" id="menu-toggle" class="menu-toggle" />
+
+<!-- NAVBAR SUPERIOR -->
 <nav class="top">
   <label for="menu-toggle" class="menu-icon">
     <img src="/icons/Menu.svg" alt="Menu Icon" />
@@ -19,96 +36,108 @@
   </div>
 </nav>
 
+<!-- MENÚ LATERAL -->
 <div class="menu">
   <div class="fotoadmin">
-    <img src="/icons/userfoto.svg" alt="" />
+    <img src="/icons/userfoto.svg" alt="Foto admin" />
     <p class="nombre-usuario">Admin #1</p>
   </div>
   <ul>
     <li><a href="/">🏠 Inicio</a></li>
-    <li><a href="/">✂️ Barberos</a></li>
+    <li><a href="/admin/barberos">✂️ Barberos</a></li>
     <li><a href="/">📅 Agendas</a></li>
-    <li><a href="/">💈 Servicios</a></li>
+    <li><a href="/admin/servicios">💈 Servicios</a></li>
     <li><a href="/">⭐ Opiniones</a></li>
   </ul>
 </div>
 
+<!-- CONTENIDO PRINCIPAL -->
 <main class="contenido-admin">
   <h1 class="titulo-principal">Dashboard de Administrador</h1>
+
   <div class="grid-cards">
     <div class="card">
-      <img src="https://cdn-icons-png.flaticon.com/128/3039/3039407.png" />
+      <img src="https://cdn-icons-png.flaticon.com/128/3039/3039407.png" alt="Barberos" />
       <div>
         <h3>Barberos registrados</h3>
-        <p>6</p>
+        <p>{totalBarberos}</p>
       </div>
     </div>
     <div class="card">
-      <img src="https://cdn-icons-png.flaticon.com/128/2942/2942911.png" />
+      <img src="https://cdn-icons-png.flaticon.com/128/2942/2942911.png" alt="Servicios" />
       <div>
         <h3>Servicios activos</h3>
-        <p>9</p>
+        <p>{totalServicios}</p>
       </div>
     </div>
     <div class="card">
-      <img src="https://cdn-icons-png.flaticon.com/128/10736/10736087.png" />
+      <img src="https://cdn-icons-png.flaticon.com/128/10736/10736087.png" alt="Citas" />
       <div>
         <h3>Citas agendadas</h3>
-        <p>12</p>
+        <p>{totalCitas}</p>
       </div>
     </div>
     <div class="card">
-      <img src="https://cdn-icons-png.flaticon.com/128/2462/2462719.png" />
+      <img src="https://cdn-icons-png.flaticon.com/128/2462/2462719.png" alt="Opiniones" />
       <div>
         <h3>Opiniones recibidas</h3>
-        <p>4</p>
+        <p>{totalResenas}</p>
       </div>
     </div>
   </div>
 </main>
 
 <style>
+/* CENTRADO GENERAL Y MEJORAS DE ESTILO */
 .contenido-admin {
   margin-left: 260px;
-  margin-top: 60px;   
+  margin-top: 60px;
   padding: 2rem;
   color: white;
   min-height: calc(100vh - 60px);
+  max-width: 1100px;
+  margin-inline: auto;
 }
 
-
-
+/* TITULO PRINCIPAL CENTRADO */
 .titulo-principal {
   margin-bottom: 2rem;
   text-align: center;
+  font-size: 2rem;
+  color: #C0A080;
 }
 
+/* GRID RESPONSIVO PARA LAS CARDS */
 .grid-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 2rem;
 }
 
+/* ESTILO DE CADA CARD */
 .card {
   background-color: #2f2f2f;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.2rem;
   transition: transform 0.2s ease;
 }
 
 .card:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
+/* ICONO DE LA CARD */
 .card img {
   width: 60px;
   height: 60px;
+  object-fit: contain;
 }
 
+/* TEXTO DE LA CARD */
 .card h3 {
   margin: 0;
   font-size: 1.1rem;
@@ -121,5 +150,4 @@
   font-weight: bold;
   color: white;
 }
-
 </style>
