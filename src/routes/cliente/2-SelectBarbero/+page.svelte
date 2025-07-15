@@ -36,6 +36,12 @@
 </script>
 
 <main class="contenedor-principal">
+<nav class="top">
+  <div class="logo">
+    <img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+  </div>
+</nav>
+
 	<div class="paso-indicador">Paso 1 de 4</div>
 	<h1>Selecciona tu Barbero</h1>
 	<p class="subtitulo">Elige al profesional que prefieras para tu servicio.</p>
