@@ -1,13 +1,13 @@
 <script>
-  import '$lib/Styles/Global.css';
-  import '$lib/Styles/Forms.css';
+  import '$lib/styles/Global.css';
+  import '$lib/styles/Forms.css';
   import { loginUsuario } from '$lib/api/login';
   import { authStore } from '$lib/stores/authStore.js';
   import { goto } from '$app/navigation'; // <-- ¡IMPORTAMOS GOTO!
 
   let correo = '';
   let contrasena = '';
-  let errorMensaje = '';
+  let errorMensaje = 'Datos incorrectos';
   let cargando = false;
 
   async function handleLogin() {
@@ -63,16 +63,17 @@
     <h1>Iniciar Sesión</h1>
     <form on:submit|preventDefault={handleLogin}>
       <label for="correo">
-        <img src="/icons/mail.svg" alt="icono correo" class="icon" />
+        <img src="\src\static\assets\icons\mail.svg" alt="icono correo" class="icon" />
         Correo Electrónico
       </label>
       <input type="email" id="correo" name="correo" bind:value={correo} required />
 
       <label for="contrasena">
-        <img src="/icons/lock.svg" alt="icono contraseña" class="icon" />
+        <img src="\src\static\assets\icons\lock.svg" alt="icono contraseña" class="icon" />
         Contraseña
       </label>
       <input type="password" id="contrasena" name="contrasena" bind:value={contrasena} required />
+      
       
       {#if errorMensaje}
         <p class="error-mensaje">{errorMensaje}</p>
@@ -82,7 +83,7 @@
         {cargando ? 'Ingresando...' : 'Ingresar'}
       </button>
 
-      <a href="/Login/Registrarse" class="crear">Crear cuenta</a>
+      <a href="/login/Registrarse" class="crear">Crear cuenta</a>
     </form>
   </div>
 </div>

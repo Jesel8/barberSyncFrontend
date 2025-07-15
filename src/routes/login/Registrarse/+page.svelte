@@ -7,22 +7,22 @@
       <h1>Crear cuenta</h1>
       <form>
         <label for="nombre">
-        <img src="/icons/user.svg" alt="icono contraseña" class="icon" />Nombre
+        <img src="/src/static/assets/icons/user.svg" alt="icono usuario" class="icon" />Nombre
         </label>
         <input type="text" id="nombre" name="nombre" required>
 
         <label for="correo">
-        <img src="/icons/mail.svg" alt="icono correo" class="icon" />Correo Electrónico
+        <img src="/src/static/assets/icons/mail.svg" alt="icono correo" class="icon" />Correo Electrónico
         </label>
         <input type="email" id="correo" name="correo" required>
 
         <label for="telefono">
-         <img src="/icons/phone-call.svg" alt="icono contraseña" class="icon" />Teléfono
+         <img src="/src/static/assets/icons/phone-call.svg" alt="icono contraseña" class="icon" />Teléfono
         </label>
         <input type="text" id="telefono" name="telefono" required>
 
         <label for="contrasena">
-        <img src="/icons/lock.svg" alt="icono contraseña" class="icon" />Contraseña
+        <img src="/src/static/assets/icons/lock.svg" alt="icono contraseña" class="icon" />Contraseña
         </label>
         <input type="password" id="contrasena" name="contrasena" required>
 

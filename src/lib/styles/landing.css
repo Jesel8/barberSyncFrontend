@@ -10,7 +10,7 @@
 
 .hero-mejorado {
   position: relative;
-  background: url('/images/fondo.jpeg') center/cover no-repeat;
+  background: url('/src/static/assets/images/fondo.jpeg') center/cover no-repeat;
   height: 85vh;
   display: flex;
   align-items: center;

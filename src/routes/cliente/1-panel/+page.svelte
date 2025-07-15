@@ -5,7 +5,7 @@
 
 <nav class="top">
   <div class="logo">
-    <img src="/images/logo blanco.png" alt="Logo BarberSync" />
+    <img src="\src\static\assets\images\logo blanco.png" alt="Logo BarberSync" />
   </div>
 </nav>
 <style>
