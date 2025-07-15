@@ -63,19 +63,19 @@
 <h1 class="titulo-panel"><span style="color: white;">Panel de</span> Usuario</h1>
 <section class="panel-usuario">
   <a href="/cliente/2-SelectBarbero" class="card-opcion">
-    <img src="/icons/calendartwo.svg" alt="Servicios" />
+    <img src="src/static/assets/icons/calendartwo.svg" alt="Servicios" />
     <h3>Agendar Cita</h3>
     <p>Explora y agenda cortes, barba y más.</p>
   </a>
 
   <a href="/cliente/Historial" class="card-opcion">
-    <img src="src\static\assets\icons\calendarone.svg" alt="Horarios" />
+    <img src="src/static/assets/icons/calendarone.svg" alt="Horarios" />
     <h3>Ver Citas</h3>
     <p>Consulta disponibilidad y reserva tu cita.</p>
   </a>
 
   <a href="/" class="card-opcion">
-    <img src="/icons/Salir.svg" alt="Salir" />
+    <img src="src/static/assets/icons/Salir.svg" alt="Salir" />
     <h3>Salir</h3>
     <p>Contáctanos o ubícanos fácilmente.</p>
   </a>
