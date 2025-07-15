@@ -1,91 +1,137 @@
 <script>
-  import '$lib/Styles/pasos.css';
-  import '$lib/Styles/Barber.css';
-  import '$lib/Styles/Global.css';
-  import '$lib/Styles/nav.css';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	// Asumimos que esta función ya existe y funciona (hace GET a /api/usuarios?rol=BARBERO)
+	import { obtenerBarberos } from '$lib/api/barberos.js';
+	import { citaStore } from '$lib/stores/citaStore.js';
 
-  let barberoSeleccionado = null;
+	// --- ESTADO ---
+	let barberos = [];
+	let isLoading = true;
+	let error = null;
 
-  const barberos = [
-    { id: 1, nombre: 'Carlos', especialidad: 'Cortes clásicos', imagen: '' },
-    { id: 2, nombre: 'Jesel', especialidad: 'Diseños modernos', imagen: '' },
-    { id: 3, nombre: 'Jorge', especialidad: 'Corte urbano y barba', imagen: '' }
-  ];
+	onMount(async () => {
+		try {
+			// Reiniciamos el estado de la cita por si el usuario vuelve a esta página
+			citaStore.reset();
+			barberos = await obtenerBarberos();
+		} catch (e) {
+			console.error('Error al cargar barberos:', e);
+			error = 'No se pudieron cargar los barberos. Inténtalo de nuevo más tarde.';
+		} finally {
+			isLoading = false;
+		}
+	});
 
-  function obtenerImagen(barbero) {
-    return barbero.imagen && barbero.imagen.trim() !== ''
-      ? barbero.imagen
-      : '/icons/userfoto.svg';
-  }
+	function handleSeleccionarBarbero(barbero) {
+		// Guardamos la información relevante del barbero en nuestra tienda
+		citaStore.seleccionarBarbero({
+			id: barbero.id,
+			nombreCompleto: `${barbero.primerNombre} ${barbero.primerApellido}`
+		});
 
-  function continuar() {
-    if (barberoSeleccionado) {
-      const barberoElegido = barberos.find(b => b.id === barberoSeleccionado);
-
-      let cita = {};
-      const almacenado = localStorage.getItem('citaParcial');
-      if (almacenado) {
-        cita = JSON.parse(almacenado);
-      }
-
-      cita.barbero = {
-        id: barberoElegido.id,
-        nombre: barberoElegido.nombre,
-        especialidad: barberoElegido.especialidad
-      };
-
-      localStorage.setItem('citaParcial', JSON.stringify(cita));
-
-      window.location.href = '/cliente/3-selectservice';
-    }
-  }
+		// Redirigimos al usuario al siguiente paso del flujo
+		goto('/cliente/3-selectservice');
+	}
 </script>
 
-<!-- NAVBAR -->
-<nav class="top">
-  <div class="logo">
-    <img src="/images/logo blanco.png" alt="Logo BarberSync" />
-  </div>
-</nav>
+<main class="contenedor-principal">
+	<div class="paso-indicador">Paso 1 de 4</div>
+	<h1>Selecciona tu Barbero</h1>
+	<p class="subtitulo">Elige al profesional que prefieras para tu servicio.</p>
 
-<!-- TÍTULO -->
-<h1 class="titulo-panel"><span style="color: white;">Selecciona tu</span> Barbero</h1>
+	{#if isLoading}
+		<div class="spinner"></div>
+	{:else if error}
+		<p class="error-message">{error}</p>
+	{:else}
+		<div class="grid-barberos">
+			{#each barberos as barbero (barbero.id)}
+				<button class="card-barbero" on:click={() => handleSeleccionarBarbero(barbero)}>
+					<img
+						src="/icons/userfoto.svg"
+						alt="Foto de {barbero.primerNombre}"
+						class="foto-barbero"
+					/>
+					<span class="nombre-barbero">{barbero.primerNombre} {barbero.primerApellido}</span>
+					<!-- Podríamos añadir especialidades aquí en el futuro -->
+				</button>
+			{/each}
+		</div>
+	{/if}
+</main>
 
-<!-- BARRA DE PROGRESO -->
-<div class="barra-progreso-container">
-  <div class="barra-etiquetas">
-    <span class="activo">Barberos</span>
-    <span>Servicios</span>
-    <span>Fecha y Hora</span>
-    <span>Completado</span>
-  </div>
-  <div class="barra-fondo">
-    <div class="barra-avance paso-1"></div>
-  </div>
-</div>
-
-<!-- SELECCIÓN DE BARBEROS -->
-<section class="seleccion-barbero">
-  <div class="grid-barberos">
-    {#each barberos as barbero}
-      <div
-        class="card-barbero"
-        class:seleccionado={barberoSeleccionado === barbero.id}
-        on:click={() => barberoSeleccionado = barbero.id}
-      >
-        <img
-          src={obtenerImagen(barbero)}
-          alt={"Barbero " + barbero.nombre}
-        />
-        <h3>{barbero.nombre}</h3>
-        <p>{barbero.especialidad}</p>
-      </div>
-    {/each}
-  </div>
-
-  <div class="boton-continuar">
-    <button on:click={continuar} disabled={!barberoSeleccionado}>
-      Continuar
-    </button>
-  </div>
-</section>
+<style>
+	.contenedor-principal {
+		max-width: 900px;
+		margin: 2rem auto;
+		padding: 2rem;
+		text-align: center;
+	}
+	.paso-indicador {
+		color: #c0a080;
+		font-weight: bold;
+		margin-bottom: 0.5rem;
+	}
+	h1 {
+		color: #f0f0f0;
+		margin-bottom: 0.5rem;
+	}
+	.subtitulo {
+		color: #aaa;
+		margin-bottom: 3rem;
+		font-size: 1.1rem;
+	}
+	.grid-barberos {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: 2rem;
+	}
+	.card-barbero {
+		background-color: #252525;
+		border: 1px solid #444;
+		border-radius: 12px;
+		padding: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		cursor: pointer;
+		transition: all 0.2s ease-in-out;
+		color: white;
+		text-align: center;
+	}
+	.card-barbero:hover {
+		transform: translateY(-8px);
+		border-color: #c0a080;
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+	}
+	.foto-barbero {
+		width: 100px;
+		height: 100px;
+		border-radius: 50%;
+		background-color: #4a4a4a;
+		border: 3px solid #c0a080;
+	}
+	.nombre-barbero {
+		font-size: 1.1rem;
+		font-weight: 600;
+	}
+	.error-message {
+		color: #ff6b6b;
+	}
+	.spinner {
+		margin: 4rem auto;
+		width: 50px;
+		height: 50px;
+		border: 5px solid #444;
+		border-top-color: #c0a080;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

@@ -1,80 +1,125 @@
-const BASE_URL = 'http://localhost:8080/api/citas';
+// src/lib/api/citas.js
 
-// Crear nueva cita
-export async function crearCita(citaRequest) {
-  const response = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(citaRequest)
-  });
-  if (!response.ok) throw new Error('Error al crear cita');
-  return await response.json();
+const BASE_URL = 'http://localhost:8080/api';
+
+// --- 🔐 Función Helper para obtener el token del usuario actual ---
+function getToken() {
+    if (typeof window === 'undefined') return null;
+    const usuarioString = localStorage.getItem('usuario');
+    if (!usuarioString) return null;
+    const usuario = JSON.parse(usuarioString);
+    return usuario ? usuario.token : null;
 }
 
-// Obtener cita por ID
-export async function obtenerCitaPorId(id) {
-  const response = await fetch(`${BASE_URL}/${id}`);
-  if (!response.ok) throw new Error('Cita no encontrada');
-  return await response.json();
+// --- 📅 Helper para formatear fechas como 'YYYY-MM-DD' ---
+function formatDateForAPI(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
-// Obtener todas las citas
-export async function obtenerTodasLasCitas() {
-  const response = await fetch(BASE_URL);
-  if (!response.ok) throw new Error('Error al obtener citas');
-  return await response.json();
+/**
+ * 🟢 [CLIENTE] Obtiene horarios disponibles para un barbero en una fecha específica,
+ * tomando en cuenta los servicios seleccionados.
+ */
+export async function obtenerDisponibilidad(idBarbero, fecha, idServicios) {
+    const token = getToken();
+    const fechaFormateada = formatDateForAPI(fecha);
+
+    const params = new URLSearchParams();
+    params.append('fecha', fechaFormateada);
+    idServicios.forEach(id => params.append('idServicios', id));
+
+    const url = `${BASE_URL}/disponibilidad/barbero/${idBarbero}?${params.toString()}`;
+    console.log(`🔎 Buscando disponibilidad en: ${url}`);
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Error al consultar la disponibilidad');
+        }
+
+        const data = await res.json();
+
+        // Retornamos únicamente las horas disponibles
+        return data
+            .filter(item => item.disponible)
+            .map(item => item.hora);
+
+    } catch (error) {
+        console.error("❌ Error en la API de disponibilidad:", error);
+        throw error;
+    }
 }
 
-// Actualizar cita
-export async function actualizarCita(id, citaRequest) {
-  const response = await fetch(`${BASE_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(citaRequest)
-  });
-  if (!response.ok) throw new Error('Error al actualizar cita');
-  return await response.json();
+/**
+ * 🟡 [ADMIN] Obtiene todas las citas para una fecha específica (de todos los barberos).
+ */
+export async function obtenerTodasLasCitasPorFecha(fecha) {
+    const token = getToken();
+    const fechaFormateada = formatDateForAPI(fecha);
+    const url = `${BASE_URL}/citas/fecha/${fechaFormateada}`;
+
+    console.log(`[ADMIN] Pidiendo TODAS las citas a: ${url}`);
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            if (res.status === 404) {
+                console.log("⚠️ No hay citas para la fecha indicada.");
+                return [];
+            }
+            throw new Error(`Error al obtener todas las citas: ${res.status} ${res.statusText}`);
+        }
+
+        return await res.json();
+
+    } catch (error) {
+        console.error("❌ Error en la llamada a la API de admin-citas:", error);
+        throw error;
+    }
 }
 
-// Eliminar cita
-export async function eliminarCita(id) {
-  const response = await fetch(`${BASE_URL}/${id}`, {
-    method: 'DELETE'
-  });
-  if (!response.ok) throw new Error('Error al eliminar cita');
-}
+/**
+ * 🟢 [CLIENTE] Crea una nueva cita en el sistema.
+ * @param {object} datosCita - Objeto con el formato del CitaRequest del backend.
+ */
+export async function crearCita(datosCita) {
+    const token = getToken();
+    const url = `${BASE_URL}/citas`;
 
-// Obtener citas por cliente
-export async function obtenerCitasPorCliente(idCliente) {
-  const response = await fetch(`${BASE_URL}/cliente/${idCliente}`);
-  if (!response.ok) throw new Error('Error al obtener citas del cliente');
-  return await response.json();
-}
+    console.log('✅ Enviando para crear cita:', datosCita);
 
-// Obtener citas por barbero
-export async function obtenerCitasPorBarbero(idBarbero) {
-  const response = await fetch(`${BASE_URL}/barbero/${idBarbero}`);
-  if (!response.ok) throw new Error('Error al obtener citas del barbero');
-  return await response.json();
-}
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(datosCita)
+        });
 
-// Obtener citas por fecha
-export async function obtenerCitasPorFecha(fechaISO) {
-  const response = await fetch(`${BASE_URL}/fecha/${fechaISO}`);
-  if (!response.ok) throw new Error('Error al obtener citas por fecha');
-  return await response.json();
-}
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.message || 'No se pudo crear la cita.');
+        }
 
-// Obtener citas por barbero y fecha
-export async function obtenerCitasPorBarberoYFecha(idBarbero, fechaISO) {
-  const response = await fetch(`${BASE_URL}/barbero/${idBarbero}/fecha/${fechaISO}`);
-  if (!response.ok) throw new Error('Error al obtener citas por barbero y fecha');
-  return await response.json();
-}
-
-// Obtener citas por cliente y estado
-export async function obtenerCitasPorClienteYEstado(idCliente, estado) {
-  const response = await fetch(`${BASE_URL}/cliente/${idCliente}/estado/${estado}`);
-  if (!response.ok) throw new Error('Error al obtener citas del cliente por estado');
-  return await response.json();
+        return await res.json();
+    } catch (error) {
+        console.error("❌ Error al crear la cita:", error);
+        throw error;
+    }
 }

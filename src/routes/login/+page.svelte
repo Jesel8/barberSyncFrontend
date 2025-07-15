@@ -2,49 +2,58 @@
   import '$lib/Styles/Global.css';
   import '$lib/Styles/Forms.css';
   import { loginUsuario } from '$lib/api/login';
-  
-  // 1. IMPORTAR EL STORE DE AUTENTICACIÓN
   import { authStore } from '$lib/stores/authStore.js';
+  import { goto } from '$app/navigation'; // <-- ¡IMPORTAMOS GOTO!
 
   let correo = '';
   let contrasena = '';
-  let errorMensaje = ''; // Para mostrar errores de forma más limpia
+  let errorMensaje = '';
+  let cargando = false;
 
-  async function handleLogin(event) {
-    event.preventDefault();
-    errorMensaje = ''; // Limpiar errores previos
+  async function handleLogin() {
+    if (cargando) return;
+    cargando = true;
+    errorMensaje = '';
 
     if (!correo || !contrasena) {
       errorMensaje = "Por favor ingresa correo y contraseña.";
+      cargando = false;
       return;
     }
 
     try {
       const datosUsuario = await loginUsuario(correo, contrasena);
-
-      // 2. ¡EL PASO CLAVE! GUARDAR LOS DATOS EN EL STORE
-      // Asumo que tu API de login devuelve un objeto con 'id', 'nombre', 'rol', etc.
-      // Por ejemplo: { id: 1, nombre: 'Jesel', rol: 'barbero' }
+      
+      // La función loginUsuario ya guarda el token en localStorage.
+      // Ahora, guardamos los datos del usuario en el store para que la UI reaccione.
       authStore.login(datosUsuario);
 
-      // 3. Redirigir según el rol (el resto del código es el mismo)
-      // La API debería devolver el rol en un formato consistente (ej: 'CLIENTE', 'BARBERO')
+      let targetUrl = '';
       switch (datosUsuario.rol.toLowerCase()) {
         case 'cliente':
-          window.location.href = '/cliente/dashboard';
+          targetUrl = '/cliente/1-panel';
           break;
         case 'barbero':
-          window.location.href = '/barbero/dashboard';
+          targetUrl = '/barbero/dashboard';
           break;
         case 'admin':
-          window.location.href = '/admin/1-paneladmin';
+          targetUrl = '/admin/1-paneladmin';
           break;
         default:
           errorMensaje = "Rol de usuario desconocido.";
+          cargando = false;
+          return;
       }
+      
+      // --- ¡CAMBIO CLAVE! ---
+      // Usamos goto para una navegación rápida de SPA. Ya no necesitamos
+      // forzar una recarga completa porque no dependemos de cookies.
+      await goto(targetUrl, { replaceState: true });
+
     } catch (error) {
       console.error('Error en login:', error);
       errorMensaje = error.message || 'Correo o contraseña incorrectos.';
+      cargando = false;
     }
   }
 </script>
@@ -52,7 +61,7 @@
 <div class="formcard-container">
   <div class="formcard">
     <h1>Iniciar Sesión</h1>
-    <form on:submit={handleLogin}>
+    <form on:submit|preventDefault={handleLogin}>
       <label for="correo">
         <img src="/icons/mail.svg" alt="icono correo" class="icon" />
         Correo Electrónico
@@ -65,22 +74,35 @@
       </label>
       <input type="password" id="contrasena" name="contrasena" bind:value={contrasena} required />
       
-      <!-- Mostrar el mensaje de error si existe -->
       {#if errorMensaje}
         <p class="error-mensaje">{errorMensaje}</p>
       {/if}
 
-      <button type="submit" class="entrar">Ingresar</button>
+      <button type="submit" class="entrar" disabled={cargando}>
+        {cargando ? 'Ingresando...' : 'Ingresar'}
+      </button>
+
       <a href="/Login/Registrarse" class="crear">Crear cuenta</a>
     </form>
   </div>
 </div>
 
 <style>
+  /* Tus estilos están bien */
   .error-mensaje {
-    color: red;
+    color: #ff6b6b;
+    background-color: rgba(255, 107, 107, 0.1);
+    border: 1px solid #ff6b6b;
+    padding: 0.75rem;
+    border-radius: 6px;
     font-size: 0.9em;
     text-align: center;
     margin-top: 10px;
+  }
+  
+  button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 </style>

@@ -6,7 +6,7 @@
     obtenerResenasPorBarbero,
     obtenerPromedioCalificacion,
     obtenerResenasPorBarberoEntreFechas
-  } from '$lib/api/resenaApi.js';
+  } from '$lib/api/resenas.js';
 
   // Suscripción al store para obtener el usuario
   $: usuarioLogueado = $authStore.usuario;

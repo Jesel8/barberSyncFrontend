@@ -1,13 +1,12 @@
-<!-- src/routes/servicios/+page.svelte -->
-
 <script>
 	import { onMount } from 'svelte';
+	// 👇 CAMBIO CLAVE: Importamos desde el nuevo archivo de API corregido
 	import {
 		getServicios,
 		createServicio,
 		updateServicio,
 		deleteServicio
-	} from '$lib/api/servicioApi';
+	} from '$lib/api/servicios.js'; // Asegúrate de que el nombre del archivo coincida
 
 	// --- ESTADO DEL COMPONENTE ---
 	let servicios = [];
@@ -15,14 +14,13 @@
 		id: null,
 		nombre: '',
 		descripcion: '',
-		precio: null, // Usar null para que el input numérico aparezca vacío
+		precio: null,
 		duracionMinuto: 30
 	};
 	
-	// Banderas para controlar la UI
 	let isLoading = true;
 	let isEditing = false;
-	let showModal = false; // NUEVO: Controla la visibilidad del modal
+	let showModal = false;
 	let error = null;
 
 	// --- LÓGICA ---
@@ -36,20 +34,19 @@
 			isLoading = true;
 			servicios = await getServicios();
 		} catch (e) {
-			error = e.message;
+			console.error("Error al cargar servicios:", e);
+			error = e.message; // El error ahora se mostrará en la UI principal si falla la carga inicial
 		} finally {
 			isLoading = false;
 		}
 	}
 
-	// Abre el modal para crear un nuevo servicio
 	function openCreateModal() {
 		resetForm();
 		isEditing = false;
 		showModal = true;
 	}
 
-	// Abre el modal para editar un servicio existente
 	function openEditModal(servicio) {
 		formServicio = { ...servicio };
 		isEditing = true;
@@ -57,7 +54,6 @@
 		showModal = true;
 	}
 	
-	// Cierra el modal y resetea el formulario
 	function closeModal() {
 		showModal = false;
 		resetForm();
@@ -65,8 +61,7 @@
 
 	async function handleSubmit() {
 		try {
-			error = null;
-			// Prepara los datos para enviar (asegurándose de que los números sean números)
+			error = null; // Limpiamos errores anteriores dentro del modal
 			const payload = {
 				...formServicio,
 				precio: parseFloat(formServicio.precio),
@@ -75,27 +70,30 @@
 
 			if (isEditing) {
 				const servicioActualizado = await updateServicio(payload.id, payload);
-				const index = servicios.findIndex(s => s.id === payload.id);
-				servicios[index] = servicioActualizado;
+				// Actualización eficiente: solo reemplazamos el item modificado
+				servicios = servicios.map(s => s.id === payload.id ? servicioActualizado : s);
 			} else {
 				const nuevoServicio = await createServicio(payload);
+				// Actualización eficiente: añadimos el nuevo item sin recargar toda la lista
 				servicios = [...servicios, nuevoServicio];
 			}
-			closeModal(); // Cierra el modal al tener éxito
+			closeModal();
 		} catch (e) {
-			error = e.message;
+			console.error("Error en el formulario:", e);
+			error = e.message; // El error se mostrará dentro del modal
 		}
 	}
 
 	async function handleEliminar(id, nombre) {
 		if (confirm(`¿Estás seguro de que quieres eliminar el servicio "${nombre}"?`)) {
 			try {
-				error = null;
 				await deleteServicio(id);
+				// Actualización eficiente: filtramos el item eliminado
 				servicios = servicios.filter(s => s.id !== id);
 			} catch (e) {
-				// Mostramos el error directamente en la página, ya que el modal no está abierto
-				alert(e.message);
+				console.error("Error al eliminar:", e);
+				// Un alert es simple y efectivo para errores fuera del modal
+				alert(`No se pudo eliminar el servicio: ${e.message}`);
 			}
 		}
 	}

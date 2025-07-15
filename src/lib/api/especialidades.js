@@ -2,35 +2,52 @@
 
 const BASE_URL = 'http://localhost:8080/api';
 
-/**
- * Obtiene la lista de especialidades disponibles desde la API.
- * @returns {Promise<Array>} Arreglo de objetos: [{ id, especialidad, descripcion }]
- */
-export async function obtenerEspecialidadesDisponibles() {
-  try {
-    const response = await fetch(`${BASE_URL}/especialidades`);
-    if (!response.ok) {
-      throw new Error('Error al obtener especialidades');
-    }
-    return await response.json(); // Ejemplo de retorno: [{ id: 1, especialidad: "Fade", descripcion: "..." }]
-  } catch (error) {
-    console.error('❌ Error en obtenerEspecialidadesDisponibles:', error);
-    return [];
-  }
+// --- Reutilizamos la misma función para obtener el token ---
+function getToken() {
+    if (typeof window === 'undefined') return null;
+    const usuarioString = localStorage.getItem('usuario');
+    if (!usuarioString) return null;
+    const usuario = JSON.parse(usuarioString);
+    return usuario ? usuario.token : null;
 }
-export async function crearEspecialidad(especialidad) {
+
+// Obtener todas las especialidades disponibles
+export async function obtenerEspecialidadesDisponibles() {
+  const token = getToken();
+  if (!token) throw new Error('No autenticado');
+
   const res = await fetch(`${BASE_URL}/especialidades`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(especialidad)
+    headers: { 'Authorization': `Bearer ${token}` }
   });
-  if (!res.ok) throw new Error('Error al crear especialidad');
+  if (!res.ok) throw new Error('Error al obtener las especialidades disponibles');
   return await res.json();
 }
 
-export async function eliminarEspecialidad(id) {
-  const res = await fetch(`${BASE_URL}/especialidades/${id}`, {
-    method: 'DELETE'
+// Crear una nueva especialidad
+export async function crearEspecialidad(data) {
+  const token = getToken();
+  if (!token) throw new Error('No autenticado');
+  
+  const res = await fetch(`${BASE_URL}/especialidades`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error('Error al eliminar especialidad');
+  if (!res.ok) throw new Error('Error al crear la especialidad');
+  return await res.json();
+}
+
+// Eliminar una especialidad
+export async function eliminarEspecialidad(id) {
+  const token = getToken();
+  if (!token) throw new Error('No autenticado');
+
+  const res = await fetch(`${BASE_URL}/especialidades/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Error al eliminar la especialidad');
 }

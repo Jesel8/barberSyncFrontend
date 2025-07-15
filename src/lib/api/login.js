@@ -1,11 +1,14 @@
 // src/lib/api/login.js
+
 export async function loginUsuario(email, contrasena) {
+  // La petición se mantiene igual, pero ahora apunta al endpoint de login de Spring Security
   const response = await fetch('http://localhost:8080/api/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ email, contrasena })
+    // El filtro de Spring espera las claves 'username' y 'password'.
+    body: JSON.stringify({ username: email, password: contrasena })
   });
 
   let data;
@@ -19,19 +22,12 @@ export async function loginUsuario(email, contrasena) {
     throw new Error(data.mensaje || 'Error al iniciar sesión');
   }
 
-  // Guardar datos comunes
+  // --- ¡LÓGICA JWT! ---
+  // Guardamos los datos del usuario Y el token JWT en localStorage.
   localStorage.setItem('idUsuario', data.idUsuario);
   localStorage.setItem('rol', data.rol);
   localStorage.setItem('nombre', data.nombreCompleto);
-
-  // Guardar ID específico según el rol
-  if (data.rol === 'barbero') {
-    localStorage.setItem('barberoId', data.idUsuario);
-  } else if (data.rol === 'cliente') {
-    localStorage.setItem('clienteId', data.idUsuario);
-  } else if (data.rol === 'admin') {
-    localStorage.setItem('adminId', data.idUsuario);
-  }
+  localStorage.setItem('authToken', data.token); // <-- ¡LA LÍNEA MÁS IMPORTANTE!
 
   return data;
 }

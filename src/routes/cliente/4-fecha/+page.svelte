@@ -1,172 +1,202 @@
-<script context="module">
-  export const ssr = false;
-</script>
-
 <script>
-  import '$lib/Styles/Global.css';
-  import '$lib/Styles/nav.css';
-  import '$lib/Styles/pasos.css';
-  import Flatpickr from 'svelte-flatpickr';
-  import 'flatpickr/dist/themes/dark.css';
-  import { Spanish } from 'flatpickr/dist/l10n/es.js';
-  import { onMount } from 'svelte';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { citaStore } from '$lib/stores/citaStore.js';
+	import { obtenerDisponibilidad } from '$lib/api/citas.js';
 
-  let fechaSeleccionada = '';
-  let horaSeleccionada = '';
+	let horariosDisponibles = [];
+	let fechaInput = new Date().toISOString().split('T')[0];
+	let isLoading = true;
+	let error = null;
 
-  const horarios = [
-    "09:00", "09:30", "10:00", "11:00",
-    "12:00", "13:00", "14:00", "15:00"
-  ];
+	// REACTIVIDAD CORRECTA
+	$: datosCita = $citaStore;
 
-  function formatearFecha(fecha) {
-    if (!(fecha instanceof Date)) return fecha;
-    const dia = fecha.getDate().toString().padStart(2, '0');
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-    const anio = fecha.getFullYear();
-    return `${dia}/${mes}/${anio}`;
-  }
+	onMount(async () => {
+		if (!datosCita.barberoSeleccionado || !datosCita.serviciosSeleccionados?.length) {
+			alert('No has seleccionado un barbero o servicios. Serás redirigido.');
+			goto('/cliente/2-SelectBarbero');
+			return;
+		}
+		await buscarHorarios();
+	});
 
-  function agendar() {
-    if (fechaSeleccionada && horaSeleccionada) {
-      let cita = {};
-      const almacenado = localStorage.getItem('citaParcial');
-      if (almacenado) {
-        cita = JSON.parse(almacenado);
-      }
+	async function buscarHorarios() {
+		isLoading = true;
+		error = null;
+		horariosDisponibles = [];
 
-      const fechaFormateada = formatearFecha(new Date(fechaSeleccionada));
-      cita.fecha = fechaFormateada;
-      cita.hora = horaSeleccionada;
+		try {
+			const [year, month, day] = fechaInput.split('-').map(Number);
+			const fechaParaAPI = new Date(year, month - 1, day);
+			const idsDeServicios = datosCita.serviciosSeleccionados.map((s) => s.id);
 
-      localStorage.setItem('citaParcial', JSON.stringify(cita));
-      window.location.href = '5-confirma';
-    }
-  }
+			horariosDisponibles = await obtenerDisponibilidad(
+				datosCita.barberoSeleccionado.id,
+				fechaParaAPI,
+				idsDeServicios
+			);
+		} catch (e) {
+			console.error(e);
+			error = 'No se pudo cargar la disponibilidad para esta fecha.';
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	function seleccionarHorario(hora) {
+		citaStore.seleccionarFechaHora(fechaInput, hora);
+		goto('/cliente/5-confirma');
+	}
 </script>
 
-<!-- NAVBAR -->
-<nav class="top">
-  <div class="logo">
-    <img src="/images/logo blanco.png" alt="Logo BarberSync" />
-  </div>
-</nav>
+<main class="contenedor-principal">
+	<div class="info-reserva">
+		<!-- Mostramos los datos directamente del store reactivo -->
+		Reservando con <strong>{$citaStore.barberoSeleccionado?.nombreCompleto}</strong>
+		<span>
+			Duración total:
+			<strong>
+				<!-- Calculamos la duración total directamente en el HTML. El '|| 0' evita errores si el array está vacío. -->
+				{$citaStore.serviciosSeleccionados?.reduce((sum, s) => sum + s.duracionMinuto, 0) || 0} min
+			</strong>
+		</span>
+	</div>
+	<div class="paso-indicador">Paso 3 de 4</div>
+	<h1>Elige Fecha y Hora</h1>
 
-<!-- TÍTULO Y BARRA DE PROGRESO -->
-<h1 class="titulo-panel">
-  <span style="color: white;">Selecciona</span> Fecha y Hora
-</h1>
+	<div class="selector-fecha">
+		<label for="fecha">Selecciona una fecha:</label>
+		<input
+			type="date"
+			id="fecha"
+			bind:value={fechaInput}
+			on:change={buscarHorarios}
+			min={new Date().toISOString().split('T')[0]}
+		/>
+	</div>
 
-<div class="barra-progreso-container">
-  <div class="barra-etiquetas">
-    <span>Barberos</span>
-    <span>Servicios</span>
-    <span class="activo">Fecha y Hora</span>
-    <span>Completado</span>
-  </div>
-  <div class="barra-fondo">
-    <div class="barra-avance paso-3"></div>
-  </div>
-</div>
-
-<!-- FORMULARIO -->
-<main class="contenedor">
-  <div class="bloque">
-    <p class="etiqueta">Fecha</p>
-    <Flatpickr
-      bind:value={fechaSeleccionada}
-      options={{
-        minDate: 'today',
-        dateFormat: 'd-m-Y',
-        locale: Spanish
-      }}
-      class="input"
-    />
-  </div>
-
-  <div class="bloque">
-    <p class="etiqueta">Hora</p>
-    <div class="horas">
-      {#each horarios as hora}
-        <button
-          class:selected={hora === horaSeleccionada}
-          on:click={() => horaSeleccionada = hora}>
-          {hora}
-        </button>
-      {/each}
-    </div>
-  </div>
-
-  <div class="confirmar">
-    <button on:click={agendar} disabled={!fechaSeleccionada || !horaSeleccionada}>
-      Confirmar
-    </button>
-  </div>
+	<!-- CÓDIGO CORRECTO -->
+	<div class="area-horarios">
+		{#if isLoading}
+			<!-- <-- ¡EL CAMBIO! -->
+			<div class="spinner"></div>
+		{:else if error}
+			<p class="error-message">{error}</p>
+		{:else if horariosDisponibles.length > 0}
+			<div class="grid-horarios">
+				{#each horariosDisponibles as hora (hora)}
+					<button class="boton-hora" on:click={() => seleccionarHorario(hora)}>
+						{hora.substring(0, 5)}
+					</button>
+				{/each}
+			</div>
+		{:else}
+			<p class="mensaje-vacio">No hay horarios disponibles para esta fecha.</p>
+		{/if}
+	</div>
 </main>
 
+<!-- El bloque <style> se mantiene exactamente igual que el que ya tienes. Cópialo y pégalo aquí. -->
 <style>
-  .contenedor {
-    max-width: 500px;
-    margin: auto;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .bloque {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .etiqueta {
-    font-weight: bold;
-    color: #ccc;
-  }
-
-  .horas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  button {
-    background: #444;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: #555;
-  }
-
-  button.selected {
-    background-color: #C0A080;
-    font-weight: bold;
-  }
-
-  .confirmar {
-    text-align: center;
-  }
-
-  .confirmar button {
-    background-color: #C0A080;
-    padding: 0.8rem 2rem;
-    font-size: 1rem;
-    border: none;
-    font-weight: bold;
-    min-width: 220px;
-    border-radius: 10px;
-    color: rgb(0, 0, 0);
-    cursor: pointer;
-  }
-
-  .confirmar button:disabled {
-    background-color: #999;
-    cursor: not-allowed;
-  }
+	.contenedor-principal {
+		max-width: 700px;
+		margin: 2rem auto;
+		padding: 2rem;
+	}
+	.info-reserva {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 1rem;
+		padding: 0.75rem;
+		background-color: #252525;
+		border-radius: 8px;
+		color: #ccc;
+	}
+	.paso-indicador,
+	h1 {
+		text-align: center;
+	}
+	.paso-indicador {
+		color: #c0a080;
+		font-weight: bold;
+	}
+	h1 {
+		color: #f0f0f0;
+		margin-bottom: 2rem;
+	}
+	.selector-fecha {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 2rem;
+	}
+	.selector-fecha label {
+		font-weight: bold;
+		color: #ccc;
+	}
+	input[type='date'] {
+		background-color: #2f2f2f;
+		color: white;
+		border: 1px solid #c0a080;
+		padding: 0.75rem;
+		border-radius: 8px;
+		font-size: 1.1rem;
+		width: 220px;
+		text-align: center;
+	}
+	.area-horarios {
+		min-height: 200px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #1f1f1f;
+		padding: 2rem;
+		border-radius: 8px;
+	}
+	.grid-horarios {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+		gap: 1rem;
+		width: 100%;
+	}
+	.boton-hora {
+		background-color: #333;
+		color: #c0a080;
+		border: 1px solid #c0a080;
+		padding: 0.75rem;
+		border-radius: 6px;
+		cursor: pointer;
+		font-weight: bold;
+		font-size: 1.1rem;
+		transition: all 0.2s;
+	}
+	.boton-hora:hover {
+		background-color: #c0a080;
+		color: black;
+		transform: scale(1.05);
+	}
+	.mensaje-vacio {
+		text-align: center;
+		color: #aaa;
+	}
+	.error-message {
+		color: #ff6b6b;
+		font-weight: bold;
+	}
+	.spinner {
+		margin: 0 auto;
+		width: 40px;
+		height: 40px;
+		border: 4px solid #444;
+		border-top-color: #c0a080;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
 </style>

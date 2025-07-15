@@ -1,165 +1,223 @@
 <script>
-  import { onMount } from 'svelte';
-  import '$lib/Styles/pasos.css';
-  import '$lib/Styles/Global.css';
-  import '$lib/Styles/nav.css';
-  import '$lib/Styles/servicios.css';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { citaStore } from '$lib/stores/citaStore.js';
+	import { getServicios } from '$lib/api/servicios.js'; // Reutilizamos la API
+	// Para leer el valor del store una sola vez
+	import { get } from 'svelte/store';
 
-  let servicioSeleccionado = null;
-  let servicios = [];
+	// --- ESTADO ---
+	let todosLosServicios = [];
+	let serviciosSeleccionadosIds = new Set(); // Usamos un Set para eficiencia al agregar/quitar
+	let barbero = get(citaStore).barberoSeleccionado; // Leemos el barbero al inicio
+	let isLoading = true;
+	let error = null;
 
-  let esAdmin = false;
+	onMount(async () => {
+		// Si no hay barbero seleccionado (ej. el usuario entró a la URL directamente), lo redirigimos
+		if (!barbero) {
+			goto('/cliente/2-SelectBarbero');
+			return;
+		}
+		try {
+			todosLosServicios = await getServicios();
+		} catch (e) {
+			error = 'No se pudieron cargar los servicios.';
+		} finally {
+			isLoading = false;
+		}
+	});
 
-  // Formulario (admin)
-  let nombre = '';
-  let duracion = '';
-  let precio = '';
-  let editando = false;
-  let idEditando = null;
+	function toggleServicio(id) {
+		if (serviciosSeleccionadosIds.has(id)) {
+			serviciosSeleccionadosIds.delete(id);
+		} else {
+			serviciosSeleccionadosIds.add(id);
+		}
+		// Forzamos una re-asignación para que Svelte detecte el cambio en el Set
+		serviciosSeleccionadosIds = serviciosSeleccionadosIds;
+	}
 
-  onMount(() => {
-    servicios = [
-      { id: 1, nombre: 'Corte de cabello', duracion: '30 min', precio: '$120' },
-      { id: 2, nombre: 'Corte + Barba', duracion: '45 min', precio: '$180' },
-      { id: 3, nombre: 'Perfilado de barba', duracion: '20 min', precio: '$100' },
-      { id: 4, nombre: 'Tinte para cabello', duracion: '60 min', precio: '$250' },
-      { id: 5, nombre: 'Afeitado tradicional', duracion: '25 min', precio: '$110' },
-      { id: 6, nombre: 'Mascarilla facial', duracion: '15 min', precio: '$90' }
-    ];
-  });
-
-  function seleccionarServicio(id) {
-    servicioSeleccionado = id;
-  }
-
-  function continuar() {
-    if (servicioSeleccionado) {
-      const servicio = servicios.find(s => s.id === servicioSeleccionado);
-
-      let cita = {};
-      const almacenado = localStorage.getItem('citaParcial');
-      if (almacenado) {
-        cita = JSON.parse(almacenado);
-      }
-
-      // Aquí guardamos el servicio como parte de citaParcial
-      cita.servicios = [servicio];
-
-      localStorage.setItem('citaParcial', JSON.stringify(cita));
-      window.location.href = '/cliente/4-fecha';
-    }
-  }
-
-  function guardarServicio() {
-    if (editando) {
-      servicios = servicios.map(s =>
-        s.id === idEditando ? { id: idEditando, nombre, duracion, precio } : s
-      );
-    } else {
-      const nuevo = {
-        id: Math.max(...servicios.map(s => s.id)) + 1,
-        nombre,
-        duracion,
-        precio
-      };
-      servicios = [...servicios, nuevo];
-    }
-    nombre = duracion = precio = '';
-    editando = false;
-    idEditando = null;
-  }
-
-  function editarServicio(servicio) {
-    nombre = servicio.nombre;
-    duracion = servicio.duracion;
-    precio = servicio.precio;
-    editando = true;
-    idEditando = servicio.id;
-  }
-
-  function eliminarServicio(id) {
-    if (confirm('¿Estás seguro de eliminar este servicio?')) {
-      servicios = servicios.filter(s => s.id !== id);
-    }
-  }
+	function continuar() {
+		if (serviciosSeleccionadosIds.size === 0) {
+			alert('Por favor, selecciona al menos un servicio.');
+			return;
+		}
+		// Filtramos la lista completa de servicios para obtener los objetos completos de los seleccionados
+		const serviciosObjetos = todosLosServicios.filter((s) => serviciosSeleccionadosIds.has(s.id));
+		// Guardamos los objetos completos en el store
+		citaStore.seleccionarServicios(serviciosObjetos);
+		goto('/cliente/4-fecha');
+	}
 </script>
 
-<!-- NAVBAR -->
-<nav class="top">
-  <div class="logo">
-    <img src="/images/logo blanco.png" alt="Logo BarberSync" />
-  </div>
-</nav>
+<main class="contenedor-principal">
+	{#if barbero}
+		<div class="info-reserva">
+			Reservando con <strong>{barbero.nombreCompleto}</strong>
+		</div>
+	{/if}
+	<div class="paso-indicador">Paso 2 de 4</div>
+	<h1>Elige tus Servicios</h1>
+	<p class="subtitulo">Puedes seleccionar uno o varios servicios.</p>
 
-<!-- TÍTULO -->
-<h1 class="titulo-panel">
-  <span style="color: white;">Selecciona un</span> Servicio
-</h1>
+	{#if isLoading}
+		<div class="spinner"></div>
+	{:else if error}
+		<p class="error-message">{error}</p>
+	{:else}
+		<div class="lista-servicios">
+			{#each todosLosServicios as servicio (servicio.id)}
+				<button
+					class="card-servicio"
+					class:seleccionado={serviciosSeleccionadosIds.has(servicio.id)}
+					on:click={() => toggleServicio(servicio.id)}
+				>
+					<div class="info">
+						<span class="nombre">{servicio.nombre}</span>
+						<span class="descripcion">{servicio.descripcion}</span>
+					</div>
+					<div class="precio-duracion">
+						<span class="precio"
+							>{servicio.precio.toLocaleString('es-MX', {
+								style: 'currency',
+								currency: 'MXN'
+							})}</span
+						>
+						<span class="duracion">{servicio.duracionMinuto} min</span>
+					</div>
+				</button>
+			{/each}
+		</div>
+		<div class="acciones">
+			<button
+				class="boton-continuar"
+				on:click={continuar}
+				disabled={serviciosSeleccionadosIds.size === 0}
+			>
+				Continuar
+			</button>
+		</div>
+	{/if}
+</main>
 
-{#if !esAdmin}
-  <div class="barra-progreso-container">
-    <div class="barra-etiquetas">
-      <span>Barberos</span>
-      <span class="activo">Servicios</span>
-      <span>Fecha y Hora</span>
-      <span>Completado</span>
-    </div>
-    <div class="barra-fondo">
-      <div class="barra-avance paso-2"></div>
-    </div>
-  </div>
-{/if}
-
-{#if esAdmin}
-  <section class="form-admin">
-    <h2>{editando ? 'Editar Servicio' : 'Nuevo Servicio'}</h2>
-    <form on:submit|preventDefault={guardarServicio}>
-      <input bind:value={nombre} placeholder="Nombre del servicio" required />
-      <input bind:value={duracion} placeholder="Duración (ej: 30 min)" required />
-      <input bind:value={precio} placeholder="Precio (ej: $120)" required />
-      <button type="submit">{editando ? 'Actualizar' : 'Agregar'}</button>
-    </form>
-  </section>
-{/if}
-
-<section class="seleccion-servicios">
-  <div class="lista-servicios">
-    {#each servicios as servicio}
-      <div
-        class="item-servicio"
-        class:activo={!esAdmin && servicioSeleccionado === servicio.id}
-        on:click={() => !esAdmin && seleccionarServicio(servicio.id)}>
-
-        <div class="icono-servicio">💈</div>
-
-        <div class="info-servicio">
-          <h3>{servicio.nombre}</h3>
-          <p>{servicio.duracion} – {servicio.precio}</p>
-        </div>
-
-        {#if !esAdmin}
-          <div class="check">
-            {#if servicioSeleccionado === servicio.id}
-              ✅
-            {/if}
-          </div>
-        {/if}
-
-        {#if esAdmin}
-          <div class="acciones-admin">
-            <button on:click={() => editarServicio(servicio)}>✏️</button>
-            <button on:click={() => eliminarServicio(servicio.id)}>🗑️</button>
-          </div>
-        {/if}
-      </div>
-    {/each}
-  </div>
-
-  {#if !esAdmin}
-    <div class="boton-continuar">
-      <button on:click={continuar} disabled={!servicioSeleccionado}>
-        Continuar
-      </button>
-    </div>
-  {/if}
-</section>
+<style>
+	.contenedor-principal {
+		max-width: 800px;
+		margin: 2rem auto;
+		padding: 2rem;
+	}
+	.info-reserva {
+		text-align: center;
+		margin-bottom: 1rem;
+		padding: 0.5rem;
+		background-color: #252525;
+		border-radius: 8px;
+		color: #c0a080;
+	}
+	.paso-indicador {
+		text-align: center;
+		color: #c0a080;
+		font-weight: bold;
+		margin-bottom: 0.5rem;
+	}
+	h1 {
+		text-align: center;
+		color: #f0f0f0;
+		margin-bottom: 0.5rem;
+	}
+	.subtitulo {
+		text-align: center;
+		color: #aaa;
+		margin-bottom: 2rem;
+	}
+	.lista-servicios {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-bottom: 2rem;
+	}
+	.card-servicio {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1.25rem;
+		background-color: #2f2f2f;
+		border: 2px solid #444;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		text-align: left;
+		color: white;
+		width: 100%;
+	}
+	.card-servicio:hover {
+		border-color: #666;
+	}
+	.card-servicio.seleccionado {
+		border-color: #c0a080;
+		background-color: #3f3c38;
+	}
+	.card-servicio .info {
+		display: flex;
+		flex-direction: column;
+	}
+	.card-servicio .nombre {
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin-bottom: 0.25rem;
+	}
+	.card-servicio .descripcion {
+		color: #ccc;
+		font-size: 0.9rem;
+	}
+	.precio-duracion {
+		text-align: right;
+	}
+	.precio-duracion .precio {
+		font-size: 1.1rem;
+		font-weight: bold;
+		color: #c0a080;
+		display: block;
+	}
+	.precio-duracion .duracion {
+		font-size: 0.9rem;
+		color: #aaa;
+	}
+	.acciones {
+		text-align: center;
+	}
+	.boton-continuar {
+		background-color: #c0a080;
+		color: black;
+		padding: 0.75rem 2rem;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		font-weight: bold;
+		font-size: 1.1rem;
+		transition: all 0.2s;
+	}
+	.boton-continuar:disabled {
+		background-color: #555;
+		cursor: not-allowed;
+	}
+	.error-message {
+		color: #ff6b6b;
+		text-align: center;
+	}
+	.spinner {
+		margin: 4rem auto;
+		width: 50px;
+		height: 50px;
+		border: 5px solid #444;
+		border-top-color: #c0a080;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+</style>

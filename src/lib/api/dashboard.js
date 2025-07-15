@@ -1,42 +1,78 @@
-// src/lib/api/dashboard.js
+// $lib/api/dashboard.js
 
-const BASE_URL = 'http://localhost:8080/api';
+// Función para obtener el token desde localStorage
+function getToken() {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+    const usuarioString = localStorage.getItem('usuario');
+    if (!usuarioString) {
+        return null;
+    }
+    const usuario = JSON.parse(usuarioString);
+    // Asumo que el token está guardado dentro del objeto de usuario
+    return usuario.token; 
+}
+
 
 export async function obtenerResumenDashboard() {
-  try {
-    const [usuariosRes, serviciosRes, citasRes, resenasRes] = await Promise.all([
-      fetch(`${BASE_URL}/usuarios`),
-      fetch(`${BASE_URL}/servicios`),
-      fetch(`${BASE_URL}/citas`),
-      fetch(`${BASE_URL}/resenas`)
-    ]);
+    const token = getToken();
 
-    if (!usuariosRes.ok || !serviciosRes.ok || !citasRes.ok || !resenasRes.ok) {
-      throw new Error('Error al obtener los datos del dashboard');
+    // Si no hay token, no podemos hacer la petición
+    if (!token) {
+        console.error('No se encontró token de autenticación.');
+        // Devolvemos los valores por defecto para que no se rompa la UI
+        return { totalBarberos: 0, totalServicios: 0, totalCitas: 0, totalResenas: 0 };
     }
 
-    const usuarios = await usuariosRes.json();
-    const servicios = await serviciosRes.json();
-    const citas = await citasRes.json();
-    const resenas = await resenasRes.json();
+    try {
+        // Hacemos todas las peticiones en paralelo para más eficiencia
+        const [resUsuarios, resServicios, resCitas, resResenas] = await Promise.all([
+            fetch('http://localhost:8080/api/usuarios', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }),
+            fetch('http://localhost:8080/api/servicios', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }),
+            fetch('http://localhost:8080/api/citas', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }),
+            fetch('http://localhost:8080/api/resenas', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+        ]);
 
-    // Filtrar barberos por rolId = 1
-    const barberos = usuarios.filter(u => u.rolId === 1);
+        // Verificamos si alguna petición falló (p. ej. por token inválido)
+        if (!resUsuarios.ok || !resServicios.ok || !resCitas.ok || !resResenas.ok) {
+            console.error('Una o más peticiones al dashboard fallaron.');
+            // Aquí podrías manejar el error, por ejemplo, deslogueando al usuario
+            // authStore.logout(); 
+            return { totalBarberos: 0, totalServicios: 0, totalCitas: 0, totalResenas: 0 };
+        }
 
-    return {
-      totalBarberos: barberos.length,
-      totalServicios: servicios.length,
-      totalCitas: citas.length,
-      totalResenas: resenas.length
-    };
+        const dataUsuarios = await resUsuarios.json();
+        const dataServicios = await resServicios.json();
+        const dataCitas = await resCitas.json();
+        const dataResenas = await resResenas.json();
 
-  } catch (error) {
-    console.error('❌ Error en obtenerResumenDashboard:', error);
-    return {
-      totalBarberos: 0,
-      totalServicios: 0,
-      totalCitas: 0,
-      totalResenas: 0
-    };
-  }
+        // Asumo que la API devuelve un array y queremos su longitud
+        return {
+            totalBarberos: dataUsuarios.length,
+            totalServicios: dataServicios.length,
+            totalCitas: dataCitas.length,
+            totalResenas: dataResenas.length
+        };
+
+    } catch (error) {
+        console.error('Error al obtener el resumen del dashboard:', error);
+        return { totalBarberos: 0, totalServicios: 0, totalCitas: 0, totalResenas: 0 };
+    }
 }

@@ -1,160 +1,190 @@
 <script>
-  import { onMount } from 'svelte';
-  import '$lib/Styles/Global.css';
-  import '$lib/Styles/nav.css';
-  import '$lib/Styles/pasos.css';
-  import { agendarCita } from '$lib/api/citaApi';
-  let cita = null;
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { citaStore } from '$lib/stores/citaStore.js';
+	import { authStore } from '$lib/stores/authStore.js';
+	import { crearCita } from '$lib/api/citas.js';
+	import { get } from 'svelte/store';
 
-  onMount(() => {
-    const almacenado = localStorage.getItem('citaParcial');
-    if (almacenado) {
-      const datos = JSON.parse(almacenado);
+	let reserva = get(citaStore);
+	let usuarioLogueado = get(authStore).usuario;
 
-      // Asegurar compatibilidad
-      if (Array.isArray(datos.servicios)) {
-        datos.servicio = datos.servicios[0]; // Para mostrarlo más fácil
-      }
+	let precioTotal = 0;
+	let error = null;
+	let isSubmitting = false;
 
-      cita = datos;
-    }
-  });
+	onMount(() => {
+		console.log('📦 Datos reserva:', reserva);
+		console.log('👤 Usuario logueado:', usuarioLogueado);
 
-async function confirmarCita() {
-  try {
-    const almacenado = localStorage.getItem('citaParcial');
-    const cita = JSON.parse(almacenado);
+		if (
+			!reserva.barberoSeleccionado ||
+			!reserva.serviciosSeleccionados?.length ||
+			!reserva.fechaSeleccionada ||
+			!reserva.horaSeleccionada ||
+			!usuarioLogueado?.idUsuario // ✅ CAMBIO CLAVE
+		) {
+			alert('Faltan datos para la cita o no se ha iniciado sesión. Serás redirigido.');
+			goto('/cliente/2-SelectBarbero');
+			return;
+		}
 
-    const request = {
-      idCliente: 1, // Reemplazar con ID real del cliente autenticado
-      idBarbero: cita.barbero.id,
-      estadoCitaId: 1, // Siempre inicia como Pendiente
-      fecha: formatearFechaISO(cita.fecha),
-      hora: cita.hora,
-      idServicios: [cita.servicios[0].id]
-    };
+		precioTotal = reserva.serviciosSeleccionados.reduce((sum, s) => sum + s.precio, 0);
+	});
 
-    const resultado = await agendarCita(request);
+	async function handleConfirmarCita() {
+		isSubmitting = true;
+		error = null;
+		try {
+			const payload = {
+				idCliente: usuarioLogueado.idUsuario, // ✅ CAMBIO CLAVE
+				idBarbero: reserva.barberoSeleccionado.id,
+				estadoCitaId: 1,
+				fecha: reserva.fechaSeleccionada,
+				hora: reserva.horaSeleccionada,
+				idServicios: reserva.serviciosSeleccionados.map((s) => s.id)
+			};
 
-    alert('✅ Cita registrada con ID: ' + resultado.id);
-    localStorage.clear();
-    window.location.href = '/cliente/1-panel';
+			console.log('📤 Enviando payload:', payload);
 
-  } catch (error) {
-    console.error(error);
-    alert('❌ Error al registrar cita');
-  }
-}
-
-function formatearFechaISO(fecha) {
-  // Si viene como dd/mm/yyyy → lo convertimos a yyyy-mm-dd
-  const [dia, mes, anio] = fecha.split('/');
-  return `${anio}-${mes}-${dia}`;
-}
+			const citaCreada = await crearCita(payload);
+			alert(`¡Tu cita ha sido confirmada con éxito! ID de Cita: ${citaCreada.id}`);
+			citaStore.reset();
+			goto('/cliente/Historial');
+		} catch (e) {
+			error = e.message || 'Ocurrió un error inesperado al confirmar la cita.';
+		} finally {
+			isSubmitting = false;
+		}
+	}
 </script>
 
-<!-- NAVBAR -->
-<nav class="top">
-  <div class="logo">
-    <img src="/images/logo blanco.png" alt="Logo BarberSync" />
-  </div>
-</nav>
+<main class="contenedor-principal">
+	<div class="paso-indicador">Paso 4 de 4</div>
+	<h1>Confirma tu Cita</h1>
 
-<!-- TÍTULO -->
-<h1 class="titulo-panel">
-  <span style="color: white;">Confirma tu</span> Cita
-</h1>
+	{#if reserva.barberoSeleccionado}
+		<div class="contenedor-resumen">
+			<div class="caja">
+				<h2>👨‍🔧 Profesional</h2>
+				<p><strong>{reserva.barberoSeleccionado.nombreCompleto}</strong></p>
+			</div>
+			<div class="caja">
+				<h2>💈 Servicios</h2>
+				<ul>
+					{#each reserva.serviciosSeleccionados as servicio}
+						<li>
+							<span>{servicio.nombre}</span>
+							<span>
+								{servicio.precio.toLocaleString('es-MX', {
+									style: 'currency',
+									currency: 'MXN'
+								})}
+							</span>
+						</li>
+					{/each}
+				</ul>
+				<div class="total">
+					<span>Precio Total:</span>
+					<strong>
+						{precioTotal.toLocaleString('es-MX', {
+							style: 'currency',
+							currency: 'MXN'
+						})}
+					</strong>
+				</div>
+			</div>
+			<div class="caja">
+				<h2>📅 Fecha y Hora</h2>
+				<p>
+					<strong>{reserva.fechaSeleccionada}</strong> a las
+					<strong>{reserva.horaSeleccionada?.substring(0, 5)}</strong>
+				</p>
+			</div>
 
-<!-- BARRA DE PROGRESO -->
-<div class="barra-progreso-container">
-  <div class="barra-etiquetas">
-    <span>Barberos</span>
-    <span>Servicios</span>
-    <span>Fecha y Hora</span>
-    <span class="activo">Completado</span>
-  </div>
-  <div class="barra-fondo">
-    <div class="barra-avance paso-4"></div>
-  </div>
-</div>
+			{#if error}
+				<p class="error-message">{error}</p>
+			{/if}
 
-{#if cita}
-  <main class="contenedor-resumen">
-    <div class="caja">
-      <h2>👨‍🔧 Barbero</h2>
-      <p><strong>Nombre:</strong> {cita.barbero?.nombre}</p>
-      <p><strong>Especialidad:</strong> {cita.barbero?.especialidad}</p>
-    </div>
-
-    <div class="caja">
-      <h2>💈 Servicio</h2>
-      <p><strong>Nombre:</strong> {cita.servicio?.nombre}</p>
-      <p><strong>Duración:</strong> {cita.servicio?.duracion}</p>
-      <p><strong>Precio:</strong> {cita.servicio?.precio}</p>
-    </div>
-
-    <div class="caja">
-      <h2>📅 Fecha y Hora</h2>
-      <p><strong>Fecha:</strong> {cita.fecha}</p>
-      <p><strong>Hora:</strong> {cita.hora}</p>
-    </div>
-
-    <div class="boton-confirmar">
-      <button on:click={confirmarCita}>Confirmar Cita</button>
-    </div>
-  </main>
-{:else}
-  <p style="text-align: center; color: #ccc; margin-top: 2rem;">
-    No hay datos de cita almacenados.
-  </p>
-{/if}
+			<div class="boton-confirmar">
+				<button on:click={handleConfirmarCita} disabled={isSubmitting}>
+					{isSubmitting ? 'Confirmando...' : 'Confirmar Cita'}
+				</button>
+			</div>
+		</div>
+	{:else}
+		<p style="text-align: center; color: #ccc;">Cargando resumen de la cita...</p>
+	{/if}
+</main>
 
 <style>
-  .contenedor-resumen {
-    max-width: 600px;
-    margin: 2rem auto;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    padding: 2rem;
-    border-radius: 16px;
-    background: #252525;
-    box-shadow: 0 0 15px rgba(0,0,0,0.3);
-    color: white;
-  }
-
-  .caja {
-    background: #2f2f2f;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  }
-
-  .caja h2 {
-    color: #C0A080;
-    margin-bottom: 0.5rem;
-  }
-
-  .caja p {
-    margin: 0.3rem 0;
-  }
-
-  .boton-confirmar {
-    text-align: center;
-  }
-
-  .boton-confirmar button {
-    background-color: #C0A080;
-    padding: 1rem 2rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    color: black;
-    font-size: 1.1rem;
-    cursor: pointer;
-  }
-
-  .boton-confirmar button:hover {
-    background-color: #d1b08c;
-  }
+	.contenedor-principal {
+		max-width: 800px;
+		margin: 2rem auto;
+		padding: 2rem;
+		color: #f0f0f0;
+	}
+	h1 {
+		text-align: center;
+		color: #cfa980;
+		font-size: 3rem;
+		margin-bottom: 2rem;
+	}
+	.paso-indicador {
+		color: #cfa980;
+		font-weight: bold;
+		margin-bottom: 1rem;
+	}
+	.contenedor-resumen {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+	.caja {
+		background-color: #1f1f1f;
+		border-radius: 8px;
+		padding: 1rem 1.5rem;
+	}
+	.caja h2 {
+		color: #cfa980;
+		margin-bottom: 0.5rem;
+	}
+	.caja ul {
+		list-style: none;
+		padding: 0;
+	}
+	.caja li {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 0.25rem;
+	}
+	.total {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 1rem;
+		font-weight: bold;
+	}
+	.boton-confirmar {
+		text-align: center;
+	}
+	.boton-confirmar button {
+		background-color: #cfa980;
+		color: black;
+		padding: 1rem 2rem;
+		border: none;
+		border-radius: 10px;
+		cursor: pointer;
+		font-size: 1.2rem;
+		font-weight: bold;
+		width: 100%;
+	}
+	.boton-confirmar button:disabled {
+		background-color: #666;
+		cursor: not-allowed;
+	}
+	.error-message {
+		color: #ff6b6b;
+		font-weight: bold;
+		text-align: center;
+	}
 </style>
