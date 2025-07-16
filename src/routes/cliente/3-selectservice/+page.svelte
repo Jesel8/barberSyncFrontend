@@ -1,4 +1,7 @@
 <script>
+	import '$lib/styles/nav.css';
+	import '$lib/styles/pasos.css';
+	import '$lib/styles/Global.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { citaStore } from '$lib/stores/citaStore.js';
@@ -52,6 +55,12 @@
 </script>
 
 <main class="contenedor-principal">
+	<nav class="top">
+		<div class="logo">
+			<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+		</div>
+	</nav>
+
 	{#if barbero}
 		<div class="info-reserva">
 			Reservando con <strong>{barbero.nombreCompleto}</strong>
@@ -59,9 +68,20 @@
 	{/if}
 	<div class="paso-indicador">Paso 2 de 4</div>
 	<h1>Elige tus Servicios</h1>
-	<p class="subtitulo">Puedes seleccionar uno o varios servicios.</p>
 
-	{#if isLoading}
+	<div class="barra-progreso-container">
+		<div class="barra-etiquetas">
+			<span>Barberos</span>
+			<span class="activo">Servicios</span>
+			<span>Fecha y Hora</span>
+			<span>Completado</span>
+		</div>
+		<div class="barra-fondo">
+			<div class="barra-avance paso-1"></div>
+		</div>
+	</div>
+
+	{#if isLoading} 
 		<div class="spinner"></div>
 	{:else if error}
 		<p class="error-message">{error}</p>
@@ -125,11 +145,6 @@
 		text-align: center;
 		color: #f0f0f0;
 		margin-bottom: 0.5rem;
-	}
-	.subtitulo {
-		text-align: center;
-		color: #aaa;
-		margin-bottom: 2rem;
 	}
 	.lista-servicios {
 		display: flex;

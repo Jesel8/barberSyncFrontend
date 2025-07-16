@@ -1,4 +1,7 @@
 <script>
+	import '$lib/styles/pasos.css';
+	import '$lib/styles/nav.css';
+	import '$lib/styles/Global.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	// Asumimos que esta función ya existe y funciona (hace GET a /api/usuarios?rol=BARBERO)
@@ -31,20 +34,30 @@
 		});
 
 		// Redirigimos al usuario al siguiente paso del flujo
-		goto('/cliente/3-selectservice');
+		goto('/Cliente/3-selectservice');
 	}
 </script>
 
 <main class="contenedor-principal">
-<nav class="top">
-  <div class="logo">
-    <img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
-  </div>
-</nav>
+	<nav class="top">
+		<div class="logo">
+			<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+		</div>
+	</nav>
 
-	<div class="paso-indicador">Paso 1 de 4</div>
 	<h1>Selecciona tu Barbero</h1>
-	<p class="subtitulo">Elige al profesional que prefieras para tu servicio.</p>
+
+	<div class="barra-progreso-container">
+		<div class="barra-etiquetas">
+			<span class="activo">Barberos</span>
+			<span>Servicios</span>
+			<span>Fecha y Hora</span>
+			<span>Completado</span>
+		</div>
+		<div class="barra-fondo">
+			<div class="barra-avance paso-1"></div>
+		</div>
+	</div>
 
 	{#if isLoading}
 		<div class="spinner"></div>
@@ -74,20 +87,11 @@
 		padding: 2rem;
 		text-align: center;
 	}
-	.paso-indicador {
-		color: #c0a080;
-		font-weight: bold;
-		margin-bottom: 0.5rem;
-	}
 	h1 {
 		color: #f0f0f0;
 		margin-bottom: 0.5rem;
 	}
-	.subtitulo {
-		color: #aaa;
-		margin-bottom: 3rem;
-		font-size: 1.1rem;
-	}
+
 	.grid-barberos {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
