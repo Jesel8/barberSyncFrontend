@@ -1,4 +1,7 @@
 <script>
+	import '$lib/styles/Global.css';
+	import '$lib/styles/nav.css';
+	import '$lib/styles/aside.css'
 	import { onMount } from 'svelte';
 	// 👇 CAMBIO CLAVE: Importamos desde el nuevo archivo de API corregido
 	import {
@@ -9,6 +12,7 @@
 	} from '$lib/api/servicios.js'; // Asegúrate de que el nombre del archivo coincida
 
 	// --- ESTADO DEL COMPONENTE ---
+	let usuario = null;
 	let servicios = [];
 	let formServicio = {
 		id: null,
@@ -104,7 +108,43 @@
 	}
 </script>
 
+<input type="checkbox" id="menu-toggle" class="menu-toggle" />
+
+<div class="menu">
+	<div class="fotoadmin">
+		<img src="/src/static/assets/icons/userfoto.svg" alt="Foto admin" />
+		<p class="nombre-usuario">
+			{#if usuario}
+				{usuario.nombreCompleto}
+			{:else}
+				Cargando...
+			{/if}
+		</p>
+	</div>
+	<ul>
+		<li><a href="/Admin/1-paneladmin">🏠 Inicio</a></li>
+		<li><a href="/Admin/barberos">✂️ Barberos</a></li>
+		<li><a href="/Admin/agendas">📅 Agendas</a></li>
+		<li><a href="/Admin/servicios">💈 Servicios</a></li>
+		<li><a href="/Admin/resenas">⭐ Opiniones</a></li>
+	</ul>
+</div>
+
 <!-- --- ESTRUCTURA HTML --- -->
+<nav class="top">
+	<label for="menu-toggle" class="menu-icon">
+		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+	</label>
+	<div class="logo">
+		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+	</div>
+	<div class="salir">
+		<a href="/">
+			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+		</a>
+	</div>
+</nav>
+
 <main>
 	<h1>Gestión de Servicios</h1>
 

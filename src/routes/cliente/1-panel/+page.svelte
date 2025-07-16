@@ -9,14 +9,6 @@
   </div>
 </nav>
 <style>
-  .titulo-panel {
-  text-align: center;
-  font-size: 2.5rem;
-  margin-top: 3rem;
-  padding-top: 60px; 
-  margin-bottom: 1rem;
-  font-weight: bold;
-}
   .panel-usuario {
   display: flex;
   justify-content: center;

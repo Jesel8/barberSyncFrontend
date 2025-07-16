@@ -1,5 +1,8 @@
 <!-- +page.svelte (Refactorizado) -->
 <script>
+	import '$lib/styles/nav.css';
+	import '$lib/styles/Global.css';
+	import '$lib/styles/aside.css';
 	import { onMount } from 'svelte';
 	// Los imports se mantienen igual, ¡están perfectos!
 	import {
@@ -17,6 +20,7 @@
 	} from '$lib/api/especialidades';
 
 	// --- ESTADO GENERAL ---
+	let usuario = null;
 	let barberos = [];
 	let cargando = true;
 	let especialidadesDisponibles = []; // La movemos aquí para que sea accesible por ambos modales
@@ -191,8 +195,44 @@
 	});
 </script>
 
+<input type="checkbox" id="menu-toggle" class="menu-toggle" />
+
+<div class="menu">
+	<div class="fotoadmin">
+		<img src="/src/static/assets/icons/userfoto.svg" alt="Foto admin" />
+		<p class="nombre-usuario">
+			{#if usuario}
+				{usuario.nombreCompleto}
+			{:else}
+				Cargando...
+			{/if}
+		</p>
+	</div>
+	<ul>
+		<li><a href="/Admin/1-paneladmin">🏠 Inicio</a></li>
+		<li><a href="/Admin/barberos">✂️ Barberos</a></li>
+		<li><a href="/Admin/agendas">📅 Agendas</a></li>
+		<li><a href="/Admin/servicios">💈 Servicios</a></li>
+		<li><a href="/Admin/resenas">⭐ Opiniones</a></li>
+	</ul>
+</div>
+
 <main class="contenido-admin">
-	<h1 class="titulo-principal">Gestión de Barberos y Especialidades</h1>
+	<!-- NAVBAR SUPERIOR -->
+	<nav class="top">
+		<label for="menu-toggle" class="menu-icon">
+			<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+		</label>
+		<div class="logo">
+			<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+		</div>
+		<div class="salir">
+			<a href="/">
+				<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+			</a>
+		</div>
+	</nav>
+	<h1 class="titulo-panel">Gestión de Barberos y Especialidades</h1>
 
 	<!-- 👇 NUEVA SECCIÓN DE BOTONES GLOBALES -->
 	<div class="acciones-globales">

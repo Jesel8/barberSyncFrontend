@@ -40,6 +40,7 @@
 	});
 </script>
 
+
 <input type="checkbox" id="menu-toggle" class="menu-toggle" />
 
 <!-- NAVBAR SUPERIOR -->
@@ -70,11 +71,11 @@
 		</p>
 	</div>
 	<ul>
-		<li><a href="/">🏠 Inicio</a></li>
-		<li><a href="/dmin/barberos">✂️ Barberos</a></li>
-		<li><a href="/admin/agendas">📅 Agendas</a></li>
-		<li><a href="/admin/servicios">💈 Servicios</a></li>
-		<li><a href="/admin/resenas">⭐ Opiniones</a></li>
+		<li><a href="/Admin/1-paneladmin">🏠 Inicio</a></li>
+		<li><a href="/Admin/barberos">✂️ Barberos</a></li>
+		<li><a href="/Admin/agendas">📅 Agendas</a></li>
+		<li><a href="/Admin/servicios">💈 Servicios</a></li>
+		<li><a href="/Admin/resenas">⭐ Opiniones</a></li>
 	</ul>
 </div>
 
@@ -99,28 +100,28 @@
         -->
 		<div class="grid-cards">
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/3039/3039407.png" alt="Barberos" />
+				<img src="/src/static/assets/icons/Barbers.svg" alt="Barberos" />
 				<div>
 					<h3>Barberos registrados</h3>
 					<p>{totalBarberos}</p>
 				</div>
 			</div>
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/2942/2942911.png" alt="Servicios" />
+				<img src="/src/static/assets/icons/Services.svg" alt="Servicios" />
 				<div>
 					<h3>Servicios activos</h3>
 					<p>{totalServicios}</p>
 				</div>
 			</div>
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/10736/10736087.png" alt="Citas" />
+				<img src="/src/static/assets/icons/Citas.svg" alt="Citas" />
 				<div>
 					<h3>Citas agendadas</h3>
 					<p>{totalCitas}</p>
 				</div>
 			</div>
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/2462/2462719.png" alt="Opiniones" />
+				<img src="/src/static/assets/icons/Opinion.svg" alt="Opiniones" />
 				<div>
 					<h3>Opiniones recibidas</h3>
 					<p>{totalResenas}</p>
