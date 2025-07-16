@@ -32,7 +32,7 @@
 <section class="servicios-profesionales py-5" id="servicios">
 	<div class="container text-center">
 		<h2 class="servicios-titulo mb-3">Nuestros Servicios</h2>
-    <p class="servicios-descripcion mb-4">
+		<p class="servicios-descripcion mb-4">
 			Calidad y detalle en cada atención. Conoce los servicios que nos distinguen.
 		</p>
 
@@ -41,7 +41,11 @@
 				<div class="carousel-item active">
 					<div class="d-flex justify-content-center flex-wrap gap-4">
 						<div class="card servicio-card">
-							<img src="\src\static\assets\images\corte.png" class="card-img-top" alt="Corte Clásico" />
+							<img
+								src="\src\static\assets\images\corte.png"
+								class="card-img-top"
+								alt="Corte Clásico"
+							/>
 							<div class="card-body text-center">
 								<h5 class="card-title">Corte de Cabello</h5>
 								<p class="card-text">Estilo limpio y tradicional. $100 MXN</p>
@@ -49,7 +53,11 @@
 						</div>
 
 						<div class="card servicio-card">
-							<img src="\src\static\assets\images\barba.png" class="card-img-top" alt="Afeitado Tradicional" />
+							<img
+								src="\src\static\assets\images\barba.png"
+								class="card-img-top"
+								alt="Afeitado Tradicional"
+							/>
 							<div class="card-body text-center">
 								<h5 class="card-title">Corte de Barba</h5>
 								<p class="card-text">Navaja caliente, espuma especial. $120 MXN</p>
@@ -57,7 +65,11 @@
 						</div>
 
 						<div class="card servicio-card">
-							<img src="\src\static\assets\images\cabar.png" class="card-img-top" alt="Diseño de Barba" />
+							<img
+								src="\src\static\assets\images\cabar.png"
+								class="card-img-top"
+								alt="Diseño de Barba"
+							/>
 							<div class="card-body text-center">
 								<h5 class="card-title">Arreglo de Cabello y Barba</h5>
 								<p class="card-text">
@@ -71,7 +83,11 @@
 				<div class="carousel-item">
 					<div class="d-flex justify-content-center flex-wrap gap-4">
 						<div class="card servicio-card">
-							<img src="\src\static\assets\images\navaja.png" class="card-img-top" alt="Fade Americano" />
+							<img
+								src="\src\static\assets\images\navaja.png"
+								class="card-img-top"
+								alt="Fade Americano"
+							/>
 							<div class="card-body text-center">
 								<h5 class="card-title">Afeitado de Barba</h5>
 								<p class="card-text">Degradado moderno. $100 MXN</p>
@@ -79,7 +95,11 @@
 						</div>
 
 						<div class="card servicio-card">
-							<img src="\src\static\assets\images\grecas.png" class="card-img-top" alt="Limpieza Facial" />
+							<img
+								src="\src\static\assets\images\grecas.png"
+								class="card-img-top"
+								alt="Limpieza Facial"
+							/>
 							<div class="card-body text-center">
 								<h5 class="card-title">Grecas/Dibujos</h5>
 								<p class="card-text">Simetria y modernedidad. $120 MXN</p>
@@ -87,7 +107,11 @@
 						</div>
 
 						<div class="card servicio-card">
-							<img src="\src\static\assets\images\cejas.png" class="card-img-top" alt="Corte para Niño" />
+							<img
+								src="\src\static\assets\images\cejas.png"
+								class="card-img-top"
+								alt="Corte para Niño"
+							/>
 							<div class="card-body text-center">
 								<h5 class="card-title">Arreglo de Cejas</h5>
 								<p class="card-text">Paciencia y estilo. $50 MXN</p>

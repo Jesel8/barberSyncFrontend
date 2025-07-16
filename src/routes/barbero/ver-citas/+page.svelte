@@ -1,128 +1,74 @@
+<!-- /routes/barbero/citas/+page.svelte -->
 <script>
-	import flatpickr from 'flatpickr';
-	import 'flatpickr/dist/flatpickr.css';
 	import { onMount } from 'svelte';
-	import { obtenerCitasPorBarbero, obtenerCitasPorBarberoYFecha } from '$lib/api/citas';
+	import { authStore } from '$lib/stores/authStore';
+	import { obtenerCitasDeBarbero } from '$lib/api/citas.js'; // Usamos la nueva función limpia
 
 	let citas = [];
-	let fechaFiltro = '';
-	let barberoId = null; // Se mantiene como null inicialmente
-	let cargando = true; // ✅ Añadimos un estado de carga para mejor UX
+	let isLoading = true;
+	let error = null;
 
-	// La función no cambia, pero ahora será llamada con un barberoId numérico
-	async function cargarCitas() {
-		if (!barberoId) return;
-		cargando = true;
-		try {
-			const resultado = await obtenerCitasPorBarbero(barberoId);
-			citas = resultado ?? [];
-		} catch (e) {
-			console.error('❌ Error al obtener citas:', e);
-			citas = []; // En caso de error, dejamos la lista vacía
-		} finally {
-			cargando = false; // Dejamos de cargar, con o sin éxito
-		}
-	}
-
-	// La función no cambia, pero ahora será llamada con un barberoId numérico
-	async function filtrarPorFecha() {
-		// Si no hay fecha, volvemos a cargar todas las citas del barbero
-		if (!fechaFiltro) {
-			await cargarCitas();
+	onMount(async () => {
+		const idBarbero = $authStore.usuario?.id;
+		if (!idBarbero) {
+			error = 'No se pudo identificar al barbero.';
+			isLoading = false;
 			return;
 		}
 
-		if (!barberoId) return; // Seguridad extra
-		cargando = true;
 		try {
-			const resultado = await obtenerCitasPorBarberoYFecha(barberoId, fechaFiltro);
-			citas = resultado ?? [];
+			citas = await obtenerCitasDeBarbero(idBarbero);
 		} catch (e) {
-			console.error('❌ Error al filtrar por fecha:', e);
-			citas = [];
+			error = e.message;
 		} finally {
-			cargando = false;
+			isLoading = false;
 		}
-	}
-
-	function limpiarFiltro() {
-		fechaFiltro = '';
-		// Es mejor usar la instancia de flatpickr para limpiar, si es posible
-		const fp = document.querySelector('#fecha')._flatpickr;
-		if (fp) {
-			fp.clear();
-		}
-		cargarCitas();
-	}
-
-	onMount(() => {
-		// ✅ CORRECCIÓN PRINCIPAL: Obtener y convertir el ID a número
-		const idDesdeStorage = localStorage.getItem('barberoId');
-		if (idDesdeStorage) {
-			// La línea clave para solucionar el problema:
-			barberoId = parseInt(idDesdeStorage, 10);
-
-			// Ahora puedes llamar a tus funciones de la API con confianza
-			cargarCitas();
-		} else {
-			console.error('No se encontró el barberoId en localStorage.');
-			// ...
-		}
-
-		// Inicializar flatpickr
-		flatpickr('#fecha', {
-			dateFormat: 'Y-m-d',
-			onChange: (selectedDates, dateStr) => {
-				fechaFiltro = dateStr;
-				filtrarPorFecha(); // La llamada se mantiene igual
-			}
-		});
-
-		// Se eliminó la llamada a cargarCitas() de aquí para que solo se ejecute
-		// si se encuentra un barberoId válido.
 	});
 </script>
 
-<div class="contenedor-citas">
-	<h2>Mis citas agendadas</h2>
+<h1>Mis Próximas Citas</h1>
 
-	<div class="filtros">
-		<input type="text" id="fecha" placeholder="Filtrar por fecha" />
-		<button class="boton-limpiar" on:click={limpiarFiltro}>Limpiar filtros</button>
+{#if isLoading}
+	<p>Cargando citas...</p>
+{:else if error}
+	<p class="error-message">{error}</p>
+{:else if citas.length === 0}
+	<p>No tienes citas agendadas.</p>
+{:else}
+	<!-- Reutilizamos la tabla o grid de tu componente de admin, pero mostrando solo la info relevante para el barbero -->
+	<div class="grid-citas">
+		{#each citas.sort((a, b) => new Date(a.fechaHora) - new Date(b.fechaHora)) as cita (cita.id)}
+			<div class={`card-cita estado-${cita.estado.toLowerCase()}`}>
+				<div class="card-header">
+					<span class="hora-cita"
+						>{new Date(cita.fechaHora).toLocaleTimeString([], {
+							hour: '2-digit',
+							minute: '2-digit'
+						})}</span
+					>
+					<span class="estado-cita">{cita.estado}</span>
+				</div>
+				<div class="card-body">
+					<p class="nombre-cliente"><strong>Cliente:</strong> {cita.clienteNombre}</p>
+					<p class="info-servicios">
+						<strong>Servicios:</strong>
+						{cita.servicios.map((s) => s.nombre).join(', ')}
+					</p>
+					<p class="info-adicional">Duración: {cita.duracionTotalMinutos} min</p>
+				</div>
+			</div>
+		{/each}
 	</div>
-
-	<!-- ✅ Mejoramos la retroalimentación al usuario -->
-	{#if cargando}
-		<p>Cargando citas...</p>
-	{:else if citas.length === 0}
-		<p>No tienes citas agendadas para la fecha seleccionada o no hay citas registradas.</p>
-	{:else}
-		<table class="tabla-citas">
-			<thead>
-				<tr>
-					<th>Cliente</th>
-					<th>Fecha</th>
-					<th>Hora</th>
-					<th>Estado</th>
-					<th>Duración</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each citas as cita}
-					<tr>
-						<td>{cita.nombreCliente ?? 'Sin nombre'}</td>
-						<td>{cita.fecha ?? '-'}</td>
-						<td>{cita.hora ?? '-'}</td>
-						<td>{cita.estado ?? '-'}</td>
-						<td>{cita.duracionTotalMinutos ?? 0} min</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	{/if}
-</div>
+{/if}
 
 <style>
+	/* Copia los estilos del grid de citas de la página de admin */
+	.grid-citas {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1.5rem;
+	}
+	/* ...etc... */
 	/* Tus estilos se mantienen igual, están perfectos */
 	.contenedor-citas {
 		padding: 2rem;

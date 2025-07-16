@@ -1,40 +1,52 @@
-// src/lib/stores/authStore.js
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 
-// Función para crear nuestro store personalizado
+const initialState = {
+	usuario: null
+};
+
 function createAuthStore() {
-	// 'writable' crea un store cuyo valor puede ser modificado
-	const { subscribe, set } = writable({ usuario: null });
+	const { subscribe, set } = writable(initialState);
 
 	return {
-		subscribe, // Para que los componentes puedan "escuchar" los cambios
+		subscribe,
 
-		// Función para cuando el usuario inicia sesión
+		// ✅ Función al iniciar sesión
 		login: (datosUsuario) => {
-			// Guardamos los datos del usuario en el store
 			set({ usuario: datosUsuario });
-			// Opcional: guardar también en localStorage para persistir la sesión
-			if (typeof window !== 'undefined') {
+
+			if (browser) {
 				localStorage.setItem('usuario', JSON.stringify(datosUsuario));
+				localStorage.setItem('authToken', datosUsuario.token); // Para fetcher.js
 			}
 		},
 
-		// Función para cerrar sesión
+		// ✅ Función al cerrar sesión
 		logout: () => {
-			set({ usuario: null });
-			if (typeof window !== 'undefined') {
+			set(initialState);
+
+			if (browser) {
 				localStorage.removeItem('usuario');
+				localStorage.removeItem('authToken');
 			}
 		},
 
-		// Función para cargar el usuario desde localStorage al iniciar la app
+		// ✅ Función para restaurar sesión desde localStorage
 		init: () => {
-			if (typeof window !== 'undefined') {
-				const usuarioGuardado = localStorage.getItem('usuario');
-				if (usuarioGuardado) {
-					const parsed = JSON.parse(usuarioGuardado);
-					console.log('🔁 authStore.init(): usuario cargado desde localStorage →', parsed);
-					set({ usuario: parsed });
+			if (browser) {
+				const usuarioGuardadoString = localStorage.getItem('usuario');
+
+				if (usuarioGuardadoString) {
+					try {
+						const usuario = JSON.parse(usuarioGuardadoString);
+						console.log('✅ authStore.init(): Sesión restaurada desde localStorage →', usuario);
+						set({ usuario });
+					} catch (e) {
+						console.error('❌ Error al parsear usuario de localStorage', e);
+						set(initialState);
+						localStorage.removeItem('usuario');
+						localStorage.removeItem('authToken');
+					}
 				}
 			}
 		}
@@ -42,3 +54,8 @@ function createAuthStore() {
 }
 
 export const authStore = createAuthStore();
+
+// ✅ Inicializar inmediatamente si estamos en el navegador
+if (browser) {
+	authStore.init();
+}

@@ -2,14 +2,13 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { citaStore } from '$lib/stores/citaStore.js';
-	import { obtenerDisponibilidad } from '$lib/api/citas.js';
+	// Ya NO importamos 'obtenerDisponibilidad' porque lo haremos aquí mismo
 
 	let horariosDisponibles = [];
 	let fechaInput = new Date().toISOString().split('T')[0];
 	let isLoading = true;
 	let error = null;
 
-	// REACTIVIDAD CORRECTA
 	$: datosCita = $citaStore;
 
 	onMount(async () => {
@@ -21,24 +20,63 @@
 		await buscarHorarios();
 	});
 
+	// ========================================================================
+	// 👇 AQUÍ ESTÁ LA SOLUCIÓN DIRECTA Y SIN INTERMEDIARIOS 👇
+	// ========================================================================
 	async function buscarHorarios() {
 		isLoading = true;
 		error = null;
 		horariosDisponibles = [];
 
 		try {
-			const [year, month, day] = fechaInput.split('-').map(Number);
-			const fechaParaAPI = new Date(year, month - 1, day);
+			// 1. Preparamos los datos
+			const idBarbero = datosCita.barberoSeleccionado.id;
 			const idsDeServicios = datosCita.serviciosSeleccionados.map((s) => s.id);
 
-			horariosDisponibles = await obtenerDisponibilidad(
-				datosCita.barberoSeleccionado.id,
-				fechaParaAPI,
-				idsDeServicios
-			);
+			// Formateamos la fecha para la URL
+			const [year, month, day] = fechaInput.split('-').map(Number);
+			const fechaParaAPI = new Date(year, month - 1, day);
+			const fechaFormateada = `${fechaParaAPI.getFullYear()}-${String(fechaParaAPI.getMonth() + 1).padStart(2, '0')}-${String(fechaParaAPI.getDate()).padStart(2, '0')}`;
+
+			// 2. Construimos la URL con los parámetros, como funcionaba antes
+			const BASE_URL = 'http://localhost:8080/api';
+			const params = new URLSearchParams({ fecha: fechaFormateada });
+			idsDeServicios.forEach((id) => params.append('idServicios', id));
+			const url = `${BASE_URL}/disponibilidad/barbero/${idBarbero}?${params.toString()}`;
+
+			console.log('Realizando petición a:', url); // Para depurar y ver la URL exacta
+
+			// 3. Hacemos la llamada con FETCH NATIVO (sin apiFetch/fetcher)
+			const token = localStorage.getItem('authToken'); // Obtenemos el token
+			const response = await fetch(url, {
+				method: 'GET', // Petición GET, la que funcionaba
+				headers: {
+					// Añadimos la cabecera de autorización si existe
+					...(token && { Authorization: `Bearer ${token}` })
+				}
+			});
+
+			// 4. Verificamos la respuesta
+			if (!response.ok) {
+				// Si hay un error, lo lanzamos para que lo capture el 'catch'
+				const errorData = await response.text(); // Leemos el error como texto
+				throw new Error(`Error ${response.status}: ${errorData}`);
+			}
+
+			// 5. Convertimos la respuesta a JSON y la asignamos
+			const data = await response.json();
+
+			// Si tu API devuelve un array de objetos {hora: "HH:MM", disponible: true/false}
+			// Esto lo transformará a un array de strings ['HH:MM', ...]
+			if (data && data.length > 0 && typeof data[0] === 'object') {
+				horariosDisponibles = data.filter((slot) => slot.disponible).map((slot) => slot.hora);
+			} else {
+				// Si tu API devuelve directamente un array de strings ['09:00', '10:30']
+				horariosDisponibles = data;
+			}
 		} catch (e) {
-			console.error(e);
-			error = 'No se pudo cargar la disponibilidad para esta fecha.';
+			console.error('Error buscando horarios (fetch nativo):', e);
+			error = 'No se pudo cargar la disponibilidad para esta fecha. Revisa la consola (F12).';
 		} finally {
 			isLoading = false;
 		}

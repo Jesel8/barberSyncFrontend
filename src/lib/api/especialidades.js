@@ -1,53 +1,51 @@
 // src/lib/api/especialidades.js
+import { apiFetch } from './fetcher';
+const ESPECIALIDADES_URL = 'http://localhost:8080/api/especialidades';
+const BARBERO_ESPECIALIDADES_URL = 'http://localhost:8080/api/barberos/especialidades';
 
-const BASE_URL = 'http://localhost:8080/api';
-
-// --- Reutilizamos la misma función para obtener el token ---
-function getToken() {
-    if (typeof window === 'undefined') return null;
-    const usuarioString = localStorage.getItem('usuario');
-    if (!usuarioString) return null;
-    const usuario = JSON.parse(usuarioString);
-    return usuario ? usuario.token : null;
+/**
+ * [ADMIN] Obtiene el catálogo completo de especialidades.
+ */
+export async function obtenerCatalogoEspecialidades() {
+	return apiFetch(ESPECIALIDADES_URL);
 }
 
-// Obtener todas las especialidades disponibles
-export async function obtenerEspecialidadesDisponibles() {
-  const token = getToken();
-  if (!token) throw new Error('No autenticado');
-
-  const res = await fetch(`${BASE_URL}/especialidades`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  if (!res.ok) throw new Error('Error al obtener las especialidades disponibles');
-  return await res.json();
-}
-
-// Crear una nueva especialidad
+/**
+ * [ADMIN] Crea una nueva especialidad en el catálogo.
+ */
 export async function crearEspecialidad(data) {
-  const token = getToken();
-  if (!token) throw new Error('No autenticado');
-  
-  const res = await fetch(`${BASE_URL}/especialidades`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error('Error al crear la especialidad');
-  return await res.json();
+	return apiFetch(ESPECIALIDADES_URL, {
+		method: 'POST',
+		body: JSON.stringify(data)
+	});
 }
 
-// Eliminar una especialidad
+/**
+ * [ADMIN] Elimina una especialidad del catálogo.
+ */
 export async function eliminarEspecialidad(id) {
-  const token = getToken();
-  if (!token) throw new Error('No autenticado');
+	return apiFetch(`${ESPECIALIDADES_URL}/${id}`, {
+		method: 'DELETE'
+	});
+}
 
-  const res = await fetch(`${BASE_URL}/especialidades/${id}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  if (!res.ok) throw new Error('Error al eliminar la especialidad');
+/**
+ * [BARBERO/ADMIN] Obtiene las especialidades que un barbero tiene asignadas.
+ */
+export async function obtenerEspecialidadesDeBarbero(idBarbero) {
+	return apiFetch(`${BARBERO_ESPECIALIDADES_URL}/${idBarbero}`);
+}
+
+/**
+ * [BARBERO/ADMIN] Actualiza la lista de especialidades de un barbero.
+ */
+export async function actualizarEspecialidadesDeBarbero(idBarbero, idsEspecialidades) {
+	const payload = {
+		idUsuario: idBarbero,
+		idEspecialidades: idsEspecialidades
+	};
+	return apiFetch(`${BARBERO_ESPECIALIDADES_URL}/${idBarbero}`, {
+		method: 'PUT',
+		body: JSON.stringify(payload)
+	});
 }
