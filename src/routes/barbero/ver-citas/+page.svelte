@@ -9,7 +9,7 @@
 	let error = null;
 
 	onMount(async () => {
-		const idBarbero = $authStore.usuario?.id;
+		const idBarbero = $authStore.usuario?.idUsuario;
 		if (!idBarbero) {
 			error = 'No se pudo identificar al barbero.';
 			isLoading = false;

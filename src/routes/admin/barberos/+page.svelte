@@ -1,25 +1,21 @@
-<!-- +page.svelte (Refactorizado) -->
 <script>
 	import { onMount } from 'svelte';
-	// Los imports se mantienen igual, ¡están perfectos!
-	import {
-		obtenerBarberos,
-		crearBarbero,
-		eliminarBarbero,
-		obtenerEspecialidades,
-		actualizarEspecialidades
-	} from '$lib/api/barberos';
+
+	// CORRECCIÓN DE IMPORTS
+	import { obtenerBarberos, crearBarbero, eliminarBarbero } from '$lib/api/barberos';
 
 	import {
 		obtenerEspecialidadesDisponibles,
 		crearEspecialidad,
-		eliminarEspecialidad
+		eliminarEspecialidad,
+		obtenerEspecialidadesDeBarbero, // <-- CORREGIDO: Importamos la función correcta
+		actualizarEspecialidadesDeBarbero // <-- CORREGIDO: Importamos la función para guardar
 	} from '$lib/api/especialidades';
 
 	// --- ESTADO GENERAL ---
 	let barberos = [];
 	let cargando = true;
-	let especialidadesDisponibles = []; // La movemos aquí para que sea accesible por ambos modales
+	let especialidadesDisponibles = [];
 
 	// --- ESTADO MODAL: CREAR BARBERO ---
 	let mostrarModalCrearBarbero = false;
@@ -32,29 +28,34 @@
 		contrasena: ''
 	};
 
-	// --- ESTADO MODAL: ASIGNAR ESPECIALIDADES (para un barbero específico) ---
-	let mostrarModalAsignar = false; // Nombre más claro
+	// --- ESTADO MODAL: ASIGNAR ESPECIALIDADES ---
+	let mostrarModalAsignar = false;
 	let especialidadesSeleccionadas = [];
 	let barberoActual = null;
 
-	// --- ESTADO MODAL: GESTIONAR ESPECIALIDADES GENERALES ---
-	let mostrarModalGestionEspecialidades = false; // Nuevo estado para el nuevo modal
+	// --- ESTADO MODAL: GESTIONAR ESPECIALIDADES ---
+	let mostrarModalGestionEspecialidades = false;
 	let nuevaEspecialidad = { especialidad: '', descripcion: '' };
 
-	// --- ESTADO MODAL: VER ESPECIALIDADES (NUEVO) ---
+	// --- ESTADO MODAL: VER ESPECIALIDADES ---
 	let mostrarModalVer = false;
-	let especialidadesDelBarbero = []; // Guardará las especialidades del barbero seleccionado
+	let especialidadesDelBarbero = [];
 
 	// --- FUNCIONES ---
+
+	// En +page.svelte
 
 	async function cargarDatosIniciales() {
 		try {
 			cargando = true;
-			// Cargamos barberos y especialidades al inicio
-			[barberos, especialidadesDisponibles] = await Promise.all([
-				obtenerBarberos(),
-				obtenerEspecialidadesDisponibles()
-			]);
+			const resultados = await Promise.all([obtenerBarberos(), obtenerEspecialidadesDisponibles()]);
+
+			// --- ¡AÑADE ESTA LÍNEA DE DEPURACIÓN! ---
+			console.log('Barberos recibidos desde la API:', resultados[0]);
+			// ------------------------------------------
+
+			barberos = resultados[0];
+			especialidadesDisponibles = resultados[1];
 		} catch (error) {
 			console.error('❌ Error al cargar datos iniciales:', error);
 			alert('No se pudieron cargar los datos. Revisa la consola.');
@@ -65,7 +66,8 @@
 
 	async function crearNuevoBarbero() {
 		try {
-			await crearBarbero(nuevoBarbero);
+			// <-- CORREGIDO: Añadimos el ID del rol de Barbero (ajústalo si es diferente)
+			await crearBarbero(nuevoBarbero, 2);
 			mostrarModalCrearBarbero = false;
 			nuevoBarbero = {
 				primerNombre: '',
@@ -74,17 +76,18 @@
 				segundoApellido: '',
 				correo: '',
 				contrasena: ''
-			}; // Limpiar formulario
-			await cargarDatosIniciales(); // Recargar todo
+			};
+			await cargarDatosIniciales();
 		} catch (error) {
-			alert('Error al crear barbero');
+			console.error('Error creando barbero:', error);
+			alert('Error al crear barbero. Revisa la consola para más detalles.');
 		}
 	}
 
 	async function eliminar(id) {
 		if (confirm('¿Estás seguro de eliminar este barbero?')) {
 			await eliminarBarbero(id);
-			await cargarDatosIniciales(); // Recargar todo
+			await cargarDatosIniciales();
 		}
 	}
 
@@ -94,14 +97,13 @@
 		mostrarModalAsignar = true;
 
 		try {
-			// Las especialidades disponibles ya las tenemos, solo buscamos las del barbero
-			const actuales = await obtenerEspecialidades(barbero.id);
-			const nombresActuales = actuales.especialidades.map((e) => e.especialidad); // Asumiendo que `especialidades` es un array de objetos
+			// <-- CORREGIDO: Usamos la función correcta
+			const actuales = await obtenerEspecialidadesDeBarbero(barbero.id);
 
-			// Marcamos los checkboxes correspondientes
-			especialidadesSeleccionadas = especialidadesDisponibles
-				.filter((e) => nombresActuales.includes(e.especialidad))
-				.map((e) => e.id);
+			// Asumimos que la API devuelve un array de objetos con la propiedad 'id'
+			const idsActuales = actuales.map((e) => e.id);
+
+			especialidadesSeleccionadas = idsActuales;
 		} catch (error) {
 			console.error('Error obteniendo especialidades del barbero:', error);
 			especialidadesSeleccionadas = [];
@@ -118,43 +120,35 @@
 
 	async function guardarAsignacionEspecialidades() {
 		try {
-			await actualizarEspecialidades(barberoActual.id, especialidadesSeleccionadas);
+			// <-- CORREGIDO: Usamos la función correcta de la API
+			await actualizarEspecialidadesDeBarbero(barberoActual.id, especialidadesSeleccionadas);
 			mostrarModalAsignar = false;
-			// Opcional: podrías recargar solo la info de ese barbero para optimizar
 		} catch (error) {
 			console.error('Error al guardar especialidades:', error);
 			alert('Error al guardar especialidades');
 		}
 	}
-	// ---- LÓGICA DEL NUEVO MODAL DE VISUALIZACIÓN (CON DEPURACIÓN) ----
+
+	// ---- LÓGICA DEL NUEVO MODAL DE VISUALIZACIÓN ----
 	async function abrirModalVer(barbero) {
 		barberoActual = barbero;
 		mostrarModalVer = true;
-		especialidadesDelBarbero = []; // Limpiamos por si acaso
-
-		// 1. Verificamos el objeto 'barbero' que recibimos
-		console.log('1. Abriendo modal para el barbero:', barbero);
+		especialidadesDelBarbero = [];
 
 		try {
-			// Llamamos a la API
-			const data = await obtenerEspecialidades(barbero.id);
+			// <-- CORREGIDO: Usamos la función correcta
+			const data = await obtenerEspecialidadesDeBarbero(barbero.id);
 
-			// 2. Imprimimos la respuesta CRUDA que nos da la API
-			console.log('2. Respuesta COMPLETA de la API (data):', data);
-
-			// Esta es la línea que sospechamos que puede estar mal
-			especialidadesDelBarbero = data.especialidades;
-
-			// 3. Verificamos qué se asignó finalmente a nuestra variable
-			console.log('3. Datos asignados a especialidadesDelBarbero:', especialidadesDelBarbero);
+			// Asumimos que la API devuelve un array de objetos
+			especialidadesDelBarbero = data;
 		} catch (error) {
 			console.error('Error al cargar especialidades para ver:', error);
 			alert('No se pudieron cargar las especialidades de este barbero.');
 		}
 	}
-	// ---- LÓGICA DEL NUEVO MODAL DE GESTIÓN ----
+
+	// ---- LÓGICA DEL NUEVO MODAL DE GESTIÓN (sin cambios) ----
 	async function abrirModalGestion() {
-		// Nos aseguramos que la lista esté fresca
 		especialidadesDisponibles = await obtenerEspecialidadesDisponibles();
 		mostrarModalGestionEspecialidades = true;
 	}
@@ -166,194 +160,250 @@
 		}
 		try {
 			await crearEspecialidad(nuevaEspecialidad);
-			nuevaEspecialidad = { especialidad: '', descripcion: '' }; // Limpiar form
-			// Recargar la lista de especialidades para ver la nueva inmediatamente
+			nuevaEspecialidad = { especialidad: '', descripcion: '' };
 			especialidadesDisponibles = await obtenerEspecialidadesDisponibles();
 		} catch (error) {
 			alert('Error al crear especialidad');
 		}
 	}
 
+	// UBICADO EN +page.svelte (¡ESTA ES LA VERSIÓN CORREGIDA!)
 	async function eliminarEspecialidadConfirmada(id) {
 		if (
 			confirm(
 				'¿Eliminar esta especialidad del catálogo general? Esto podría afectar a los barberos que la tengan.'
 			)
 		) {
-			await eliminarEspecialidad(id);
-			// Recargar la lista para que desaparezca
-			especialidadesDisponibles = await obtenerEspecialidadesDisponibles();
+			try {
+				// 1. Intentamos ejecutar la operación de borrado.
+				await eliminarEspecialidad(id);
+
+				// 2. Si la línea de arriba NO lanzó un error, significa que tuvo éxito.
+				//    Procedemos a recargar la lista de especialidades.
+				especialidadesDisponibles = await obtenerEspecialidadesDisponibles();
+
+				// Opcional: Puedes añadir una alerta de éxito para una mejor experiencia.
+				alert('¡La especialidad ha sido eliminada correctamente!');
+			} catch (error) {
+				// 3. Si la línea "await eliminarEspecialidad(id)" falló, el código salta
+				//    directamente a este bloque CATCH.
+
+				//    "error.message" contiene el mensaje que enviaste desde tu backend.
+				console.error(error); // Es bueno mantener el log para depuración
+				alert(error.message); // ¡Aquí le mostramos el mensaje amigable al usuario!
+			}
 		}
 	}
-
 	onMount(() => {
 		cargarDatosIniciales();
 	});
 </script>
 
 <main class="contenido-admin">
-	<h1 class="titulo-principal">Gestión de Barberos y Especialidades</h1>
-
-	<!-- 👇 NUEVA SECCIÓN DE BOTONES GLOBALES -->
-	<div class="acciones-globales">
-		<button class="boton-agregar" on:click={() => (mostrarModalCrearBarbero = true)}>
-			➕ Agregar Barbero
-		</button>
-		<button class="boton-gestionar" on:click={abrirModalGestion}>
-			🧠 Gestionar Especialidades
-		</button>
+	<div class="header-principal">
+		<h1 class="titulo-principal">Gestión de Barberos</h1>
+		<div class="acciones-globales">
+			<button class="boton-accion primario" on:click={() => (mostrarModalCrearBarbero = true)}>
+				➕ Agregar Barbero
+			</button>
+			<button class="boton-accion secundario" on:click={abrirModalGestion}>
+				⚙️ Gestionar Especialidades
+			</button>
+		</div>
 	</div>
 
 	{#if cargando}
-		<p>Cargando datos...</p>
+		<div class="estado-carga">Cargando datos...</div>
 	{:else}
-		<table class="tabla-barberos">
-			<thead>
-				<tr>
-					<th>Nombre</th>
-					<th>Correo</th>
-					<th>Fecha Registro</th>
-					<th>Acciones</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each barberos as b}
+		<div class="contenedor-tabla">
+			<table class="tabla-gestion">
+				<thead>
 					<tr>
-						<td>{b.primerNombre} {b.segundoNombre} {b.primerApellido} {b.segundoApellido}</td>
-						<td>{b.correo}</td>
-						<td>{new Date(b.fechaRegistro).toLocaleDateString()}</td>
-						<!-- Mejor formato de fecha -->
-						<td>
-							<!-- Este botón ahora abre el modal de ASIGNACIÓN -->
-							<button on:click={() => abrirModalAsignar(b)}>✏️ Asignar</button>
-
-							<!-- 👇 ESTA ES LA LÍNEA QUE DEBES AÑADIR 👇 -->
-							<button on:click={() => abrirModalVer(b)}>👁️ Ver</button>
-
-							<button on:click={() => eliminar(b.id)}>🗑️ Eliminar</button>
-						</td>
+						<th>Nombre Completo</th>
+						<th>Correo</th>
+						<th>Fecha de Registro</th>
+						<th class="columna-acciones">Acciones</th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{#each barberos as b (b.id)}
+						<tr>
+							<td>{b.primerNombre} {b.segundoNombre} {b.primerApellido} {b.segundoApellido}</td>
+							<td>{b.correo}</td>
+							<td>{new Date(b.fechaRegistro).toLocaleDateString()}</td>
+							<td class="columna-acciones">
+								<div class="grupo-botones-tabla">
+									<button
+										class="boton-tabla ver"
+										on:click={() => abrirModalVer(b)}
+										title="Ver Especialidades">👁️</button
+									>
+									<button
+										class="boton-tabla editar"
+										on:click={() => abrirModalAsignar(b)}
+										title="Asignar Especialidades">✏️</button
+									>
+									<button
+										class="boton-tabla eliminar"
+										on:click={() => eliminar(b.id)}
+										title="Eliminar Barbero">🗑️</button
+									>
+								</div>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	{/if}
 
 	<!-- ============================================== -->
-	<!-- === MODAL 1: CREAR NUEVO BARBERO (Sin cambios) === -->
+	<!-- === MODAL 1: CREAR NUEVO BARBERO ============= -->
 	<!-- ============================================== -->
 	{#if mostrarModalCrearBarbero}
-		<div class="modal" on:click|self={() => (mostrarModalCrearBarbero = false)}>
-			<div class="modal-content">
-				<h2>Nuevo Barbero</h2>
-				<input bind:value={nuevoBarbero.primerNombre} placeholder="Primer Nombre" />
-				<input bind:value={nuevoBarbero.segundoNombre} placeholder="Segundo Nombre" />
-				<input bind:value={nuevoBarbero.primerApellido} placeholder="Primer Apellido" />
-				<input bind:value={nuevoBarbero.segundoApellido} placeholder="Segundo Apellido" />
-				<input bind:value={nuevoBarbero.correo} placeholder="Correo" type="email" />
-				<input bind:value={nuevoBarbero.contrasena} placeholder="Contraseña" type="password" />
-				<div class="modal-actions">
-					<button on:click={crearNuevoBarbero}>Guardar</button>
-					<button on:click={() => (mostrarModalCrearBarbero = false)}>Cancelar</button>
-				</div>
+		<div class="modal-overlay" on:click|self={() => (mostrarModalCrearBarbero = false)}>
+			<div class="modal-contenido">
+				<h2 class="modal-titulo">Nuevo Barbero</h2>
+				<form class="modal-formulario" on:submit|preventDefault={crearNuevoBarbero}>
+					<input bind:value={nuevoBarbero.primerNombre} placeholder="Primer Nombre" required />
+					<input bind:value={nuevoBarbero.segundoNombre} placeholder="Segundo Nombre" />
+					<input bind:value={nuevoBarbero.primerApellido} placeholder="Primer Apellido" required />
+					<input bind:value={nuevoBarbero.segundoApellido} placeholder="Segundo Apellido" />
+					<input
+						bind:value={nuevoBarbero.correo}
+						placeholder="Correo Electrónico"
+						type="email"
+						required
+					/>
+					<input
+						bind:value={nuevoBarbero.contrasena}
+						placeholder="Contraseña"
+						type="password"
+						required
+					/>
+					<div class="modal-acciones">
+						<button
+							type="button"
+							class="boton-accion secundario"
+							on:click={() => (mostrarModalCrearBarbero = false)}>Cancelar</button
+						>
+						<button type="submit" class="boton-accion primario">Guardar</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	{/if}
 
 	<!-- ============================================================== -->
-	<!-- === MODAL 2: ASIGNAR ESPECIALIDADES A UN BARBERO (Refactorizado) === -->
+	<!-- === MODAL 2: ASIGNAR ESPECIALIDADES A UN BARBERO ============= -->
 	<!-- ============================================================== -->
 	{#if mostrarModalAsignar}
-		<div class="modal" on:click|self={() => (mostrarModalAsignar = false)}>
-			<div class="modal-content">
-				<h2>Especialidades de {barberoActual.primerNombre}</h2>
-				<p>Selecciona las especialidades que domina este barbero.</p>
+		<div class="modal-overlay" on:click|self={() => (mostrarModalAsignar = false)}>
+			<div class="modal-contenido">
+				<h2 class="modal-titulo">Asignar Especialidades a {barberoActual.primerNombre}</h2>
+				<p class="modal-subtitulo">Selecciona las especialidades que domina este barbero.</p>
 
-				<div class="lista-especialidades-asignar">
-					{#each especialidadesDisponibles as esp (esp.especialidad)}
-						<label>
+				<div class="lista-checkbox">
+					{#each especialidadesDisponibles as esp (esp.id)}
+						<label class="checkbox-item">
 							<input
 								type="checkbox"
 								checked={especialidadesSeleccionadas.includes(esp.id)}
 								on:change={() => toggleEspecialidad(esp.id)}
 							/>
-							{esp.especialidad}
+							<span class="checkbox-label">{esp.especialidad}</span>
 						</label>
 					{/each}
 				</div>
 
-				<div class="modal-actions">
-					<button on:click={guardarAsignacionEspecialidades}>Guardar Cambios</button>
-					<button on:click={() => (mostrarModalAsignar = false)}>Cancelar</button>
+				<div class="modal-acciones">
+					<button class="boton-accion secundario" on:click={() => (mostrarModalAsignar = false)}
+						>Cancelar</button
+					>
+					<button class="boton-accion primario" on:click={guardarAsignacionEspecialidades}
+						>Guardar Cambios</button
+					>
 				</div>
 			</div>
 		</div>
 	{/if}
+
 	<!-- ======================================================== -->
-	<!-- === MODAL 4: VER ESPECIALIDADES DEL BARBERO (NUEVO) === -->
+	<!-- === MODAL 3: VER ESPECIALIDADES DEL BARBERO ============ -->
 	<!-- ======================================================== -->
 	{#if mostrarModalVer && barberoActual}
-		<div class="modal" on:click|self={() => (mostrarModalVer = false)}>
-			<div class="modal-content">
-				<h2>Especialidades de {barberoActual.primerNombre}</h2>
+		<div class="modal-overlay" on:click|self={() => (mostrarModalVer = false)}>
+			<div class="modal-contenido">
+				<h2 class="modal-titulo">Especialidades de {barberoActual.primerNombre}</h2>
 
-				{#if especialidadesDelBarbero.length > 0}
-					<ul class="lista-ver-especialidades">
-						{#each especialidadesDelBarbero as especialidad (especialidad)}
-							<li>
-								<strong>{especialidad}</strong>
-								<!-- No podemos mostrar descripción porque la API no la envía aquí -->
-							</li>
+				{#if especialidadesDelBarbero.especialidades && especialidadesDelBarbero.especialidades.length > 0}
+					<ul class="lista-simple">
+						{#each especialidadesDelBarbero.especialidades as especialidad (especialidad)}
+							<li class="lista-simple-item">{especialidad}</li>
 						{/each}
 					</ul>
 				{:else}
-					<p>Este barbero aún no tiene especialidades asignadas.</p>
+					<p class="mensaje-vacio">Este barbero aún no tiene especialidades asignadas.</p>
 				{/if}
 
-				<div class="modal-actions">
-					<button on:click={() => (mostrarModalVer = false)}>Cerrar</button>
+				<div class="modal-acciones">
+					<button class="boton-accion primario" on:click={() => (mostrarModalVer = false)}
+						>Cerrar</button
+					>
 				</div>
 			</div>
 		</div>
 	{/if}
+
 	<!-- ============================================================== -->
-	<!-- === MODAL 3: GESTIONAR ESPECIALIDADES GLOBALES (NUEVO) === -->
+	<!-- === MODAL 4: GESTIONAR ESPECIALIDADES GLOBALES =============== -->
 	<!-- ============================================================== -->
 	{#if mostrarModalGestionEspecialidades}
-		<div class="modal" on:click|self={() => (mostrarModalGestionEspecialidades = false)}>
-			<div class="modal-content">
-				<h2>Gestionar Catálogo de Especialidades</h2>
+		<div class="modal-overlay" on:click|self={() => (mostrarModalGestionEspecialidades = false)}>
+			<div class="modal-contenido" style="max-width: 600px;">
+				<h2 class="modal-titulo">Catálogo de Especialidades</h2>
 
 				<div class="seccion-modal">
-					<h3>Crear Nueva Especialidad</h3>
-					<input
-						bind:value={nuevaEspecialidad.especialidad}
-						placeholder="Nombre (ej: Corte Clásico)"
-					/>
-					<input bind:value={nuevaEspecialidad.descripcion} placeholder="Descripción (opcional)" />
-					<button on:click={guardarNuevaEspecialidad}>➕ Agregar al Catálogo</button>
+					<h3 class="seccion-titulo">Crear Nueva Especialidad</h3>
+					<form class="formulario-en-linea" on:submit|preventDefault={guardarNuevaEspecialidad}>
+						<input
+							bind:value={nuevaEspecialidad.especialidad}
+							placeholder="Nombre (ej: Corte Clásico)"
+							required
+						/>
+						<input
+							bind:value={nuevaEspecialidad.descripcion}
+							placeholder="Descripción (opcional)"
+						/>
+						<button type="submit" class="boton-accion primario mini">➕ Agregar</button>
+					</form>
 				</div>
 
-				<hr />
+				<hr class="modal-separador" />
 
 				<div class="seccion-modal">
-					<h3>Especialidades Existentes</h3>
-					<div class="lista-especialidades">
+					<h3 class="seccion-titulo">Especialidades Existentes</h3>
+					<div class="lista-gestion">
 						{#each especialidadesDisponibles as esp (esp.id)}
-							<div class="especialidad-item">
-								<span>{esp.especialidad}</span>
+							<div class="item-gestion">
+								<span class="item-gestion-texto">{esp.especialidad}</span>
 								<button
-									class="boton-eliminar-esp"
+									class="boton-tabla eliminar"
+									title="Eliminar del catálogo"
 									on:click={() => eliminarEspecialidadConfirmada(esp.id)}>🗑️</button
 								>
 							</div>
 						{:else}
-							<p>No hay especialidades creadas.</p>
+							<p class="mensaje-vacio">No hay especialidades creadas en el catálogo.</p>
 						{/each}
 					</div>
 				</div>
 
-				<div class="modal-actions">
-					<button on:click={() => (mostrarModalGestionEspecialidades = false)}>Cerrar</button>
+				<div class="modal-acciones">
+					<button
+						class="boton-accion secundario"
+						on:click={() => (mostrarModalGestionEspecialidades = false)}>Cerrar</button
+					>
 				</div>
 			</div>
 		</div>
@@ -361,126 +411,318 @@
 </main>
 
 <style>
-	/* ... Tus estilos existentes son geniales ... */
-	/* Añadimos algunos estilos para los nuevos elementos */
+	/* --- VARIABLES Y ESTILOS GLOBALES --- */
+	:root {
+		--color-primario: #c0a080;
+		--color-fondo: #1e1e1e;
+		--color-superficie: #2a2a2a;
+		--color-borde: #444;
+		--color-texto-principal: #e0e0e0;
+		--color-texto-secundario: #a0a0a0;
+		--color-peligro: #f44336;
+		--color-exito: #4caf50;
+		--color-editar: #2196f3;
+		--sombra-suave: 0 4px 12px rgba(0, 0, 0, 0.4);
+		--radio-borde: 8px;
+	}
+
+	.contenido-admin {
+		max-width: 1200px;
+		margin: 2rem auto;
+		padding: 2rem;
+		color: var(--color-texto-principal);
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	}
+
+	/* --- ENCABEZADO PRINCIPAL --- */
+	.header-principal {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+		margin-bottom: 2.5rem;
+	}
+
+	.titulo-principal {
+		color: var(--color-primario);
+		margin: 0;
+		font-size: 2.5rem;
+		font-weight: 600;
+	}
+
 	.acciones-globales {
 		display: flex;
 		gap: 1rem;
-		margin-bottom: 1.5rem;
-	}
-	.boton-agregar {
-		background-color: #c0a080;
-		color: black;
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 8px;
-		cursor: pointer;
-		font-weight: bold;
-	}
-	.boton-gestionar {
-		background-color: #4a4a4a;
-		color: white;
-		padding: 0.5rem 1rem;
-		border: 1px solid #c0a080;
-		border-radius: 8px;
-		cursor: pointer;
-		font-weight: bold;
-	}
-	.tabla-barberos {
-		width: 100%;
-		border-collapse: collapse;
-	}
-	.tabla-barberos th,
-	.tabla-barberos td {
-		padding: 0.75rem;
-		text-align: left;
-		border-bottom: 1px solid #555;
-		color: white;
-	}
-	.tabla-barberos th {
-		background-color: #252525;
-		color: #c0a080;
-	}
-	.tabla-barberos button {
-		margin-right: 0.5rem;
 	}
 
-	.modal {
+	.estado-carga,
+	.mensaje-vacio {
+		text-align: center;
+		font-size: 1.2rem;
+		padding: 3rem 1rem;
+		color: var(--color-texto-secundario);
+	}
+
+	/* --- BOTONES DE ACCIÓN --- */
+	.boton-accion {
+		padding: 0.75rem 1.5rem;
+		border-radius: var(--radio-borde);
+		border: 2px solid transparent;
+		font-weight: 600;
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: all 0.2s ease-in-out;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.boton-accion.primario {
+		background-color: var(--color-primario);
+		color: #111;
+		border-color: var(--color-primario);
+	}
+	.boton-accion.primario:hover {
+		background-color: #d4b090;
+		border-color: #d4b090;
+		transform: translateY(-2px);
+	}
+
+	.boton-accion.secundario {
+		background-color: transparent;
+		color: var(--color-primario);
+		border-color: var(--color-primario);
+	}
+	.boton-accion.secundario:hover {
+		background-color: var(--color-primario);
+		color: #111;
+	}
+
+	.boton-accion.mini {
+		padding: 0.5rem 1rem;
+		font-size: 0.8rem;
+	}
+
+	/* --- TABLA DE GESTIÓN --- */
+	.contenedor-tabla {
+		overflow-x: auto;
+		background-color: var(--color-superficie);
+		border-radius: var(--radio-borde);
+		box-shadow: var(--sombra-suave);
+	}
+	.tabla-gestion {
+		width: 100%;
+		border-collapse: collapse;
+		white-space: nowrap;
+	}
+	.tabla-gestion th,
+	.tabla-gestion td {
+		padding: 1rem 1.25rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-borde);
+	}
+	.tabla-gestion th {
+		background-color: #333;
+		color: var(--color-primario);
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+	.tabla-gestion tbody tr {
+		transition: background-color 0.2s ease;
+	}
+	.tabla-gestion tbody tr:hover {
+		background-color: #383838;
+	}
+	.tabla-gestion tbody tr:last-child td {
+		border-bottom: none;
+	}
+	.columna-acciones {
+		text-align: right;
+	}
+
+	.grupo-botones-tabla {
+		display: flex;
+		gap: 0.75rem;
+		justify-content: flex-end;
+	}
+
+	.boton-tabla {
+		background: transparent;
+		border: none;
+		font-size: 1.25rem;
+		cursor: pointer;
+		transition:
+			transform 0.2s ease,
+			color 0.2s ease;
+		padding: 0.25rem;
+	}
+	.boton-tabla:hover {
+		transform: scale(1.2);
+	}
+	.boton-tabla.ver {
+		color: var(--color-texto-secundario);
+	}
+	.boton-tabla.ver:hover {
+		color: white;
+	}
+	.boton-tabla.editar {
+		color: var(--color-editar);
+	}
+	.boton-tabla.eliminar {
+		color: var(--color-peligro);
+	}
+
+	/* --- MODALES --- */
+	.modal-overlay {
 		position: fixed;
 		top: 0;
 		left: 0;
-		width: 100vw;
-		height: 100vh;
-		background-color: rgba(0, 0, 0, 0.7);
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.8);
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		z-index: 10;
+		z-index: 1000;
 	}
-	.modal-content {
-		background: #2f2f2f;
-		padding: 2rem;
+	.modal-contenido {
+		background: var(--color-superficie);
+		padding: 2rem 2.5rem;
 		border-radius: 12px;
 		width: 90%;
 		max-width: 500px;
 		max-height: 90vh;
 		overflow-y: auto;
+		box-shadow: var(--sombra-suave);
+		border-top: 4px solid var(--color-primario);
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 1.5rem;
 	}
-	.modal-content h2 {
-		margin-top: 0;
-		color: #c0a080;
+
+	.modal-titulo {
+		margin: 0;
+		color: var(--color-texto-principal);
+		font-size: 1.75rem;
 	}
-	.modal-content input {
-		width: 100%;
-		box-sizing: border-box;
-		padding: 0.75rem;
-		border-radius: 6px;
-		border: none;
-		background: #555;
-		color: white;
+
+	.modal-subtitulo {
+		margin: -1rem 0 0 0;
+		color: var(--color-texto-secundario);
 	}
-	.modal-actions {
+
+	.modal-acciones {
 		display: flex;
 		justify-content: flex-end;
 		gap: 1rem;
 		margin-top: 1rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--color-borde);
 	}
+
+	/* --- FORMULARIOS DENTRO DE MODAL --- */
+	.modal-formulario {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+	.modal-contenido input {
+		width: 100%;
+		box-sizing: border-box;
+		padding: 0.8rem 1rem;
+		border-radius: var(--radio-borde);
+		border: 1px solid var(--color-borde);
+		background: #3c3c3c;
+		color: var(--color-texto-principal);
+		font-size: 1rem;
+		transition:
+			border-color 0.2s,
+			background-color 0.2s;
+	}
+	.modal-contenido input:focus {
+		outline: none;
+		border-color: var(--color-primario);
+		background-color: #444;
+	}
+
+	.formulario-en-linea {
+		display: grid;
+		grid-template-columns: 1fr 1fr auto;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	/* --- LISTAS DENTRO DE MODAL --- */
 	.seccion-modal {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+	.seccion-titulo {
+		margin: 0;
+		font-size: 1.1rem;
+		color: var(--color-texto-secundario);
+		border-bottom: 1px solid var(--color-borde);
+		padding-bottom: 0.5rem;
+	}
+	.modal-separador {
+		border: none;
+		border-top: 1px solid var(--color-borde);
+		margin: 1rem 0;
+	}
+
+	.lista-checkbox {
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
 	}
-
-	.lista-especialidades-asignar label {
-		display: block;
-		background: #444;
-		padding: 0.75rem;
-		border-radius: 6px;
+	.checkbox-item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		background-color: #3a3a3a;
+		padding: 0.75rem 1rem;
+		border-radius: var(--radio-borde);
 		cursor: pointer;
+		transition: background-color 0.2s;
 	}
-	.lista-especialidades-asignar label:hover {
-		background: #555;
+	.checkbox-item:hover {
+		background-color: #4a4a4a;
+	}
+	.checkbox-item input[type='checkbox'] {
+		width: 1.2em;
+		height: 1.2em;
+		accent-color: var(--color-primario);
 	}
 
-	.especialidad-item {
+	.lista-simple {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.lista-simple-item {
+		background-color: #3a3a3a;
+		padding: 0.75rem 1.25rem;
+		border-radius: var(--radio-borde);
+		border-left: 3px solid var(--color-primario);
+	}
+
+	.lista-gestion {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.item-gestion {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		background: #1f1f1f;
-		padding: 0.5rem 1rem;
-		border-radius: 6px;
-	}
-	.especialidad-item span {
-		color: white;
-	}
-	.boton-eliminar-esp {
-		background: transparent;
-		border: none;
-		color: #ff6b6b;
-		font-size: 1.2rem;
-		cursor: pointer;
+		background: #3a3a3a;
+		padding: 0.5rem 0.5rem 0.5rem 1.25rem;
+		border-radius: var(--radio-borde);
 	}
 </style>

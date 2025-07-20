@@ -7,8 +7,8 @@
 	let isAuthorized = false;
 	let usuario = null;
 
-	const unsubscribe = authStore.subscribe(value => {
-		usuario = value.usuario; // Ahora usamos directamente los campos del store mejorado
+	const unsubscribe = authStore.subscribe((value) => {
+		usuario = value.usuario;
 		if (usuario && (usuario.rol === 'barbero' || usuario.rol === 'admin')) {
 			isAuthorized = true;
 		} else {
@@ -31,98 +31,233 @@
 </script>
 
 {#if isAuthorized && usuario}
-	<!-- ESTRUCTURA DEL PANEL -->
-	<nav class="top">
-		<div class="logo">
-			<img src="/images/logo-blanco.png" alt="Logo BarberSync" />
-		</div>
-	</nav>
+	<div class="panel-layout">
+		<!-- === NAVBAR MEJORADA === -->
+		<nav class="navbar">
+			<div class="navbar-logo">
+				<img src="\src\static\assets\images\logo blanco.png" alt="Logo BarberSync" />
+			</div>
+			<div class="navbar-usuario">
+				<span class="usuario-nombre">Bienvenido, {usuario.nombre}</span>
+				<button class="boton-logout" on:click={cerrarSesion}>
+					<img src="/icons/Salir.svg" alt="Salir" />
+					Cerrar Sesión
+				</button>
+			</div>
+		</nav>
 
-	<h1 class="titulo-panel"><span style="color: white;">Panel del</span> {usuario.nombre}</h1>
+		<!-- === PANEL DE OPCIONES DEL USUARIO === -->
+		<section class="opciones-grid">
+			<a href="/barbero/ver-citas" class="card-opcion">
+				<div class="card-icono">
+					<img src="/icons/calendarone.svg" alt="Citas" />
+				</div>
+				<h3>Ver Citas</h3>
+				<p>Consulta tus citas agendadas con clientes.</p>
+			</a>
 
-	<section class="panel-usuario">
-		<a href="/barbero/ver-citas" class="card-opcion">
-			<img src="/icons/calendarone.svg" alt="Citas" />
-			<h3>Ver Citas</h3>
-			<p>Consulta tus citas agendadas con clientes.</p>
-		</a>
+			<a href="/barbero/resenas" class="card-opcion">
+				<div class="card-icono">
+					<img src="/icons/review.svg" alt="Reseñas" />
+				</div>
+				<h3>Ver Reseñas</h3>
+				<p>Revisa las opiniones que han dejado los clientes.</p>
+			</a>
 
-		<a href="/barbero/resenas" class="card-opcion">
-			<img src="/icons/review.svg" alt="Reseñas" />
-			<h3>Ver Reseñas</h3>
-			<p>Revisa las opiniones que han dejado los clientes.</p>
-		</a>
+			<!-- === TARJETA MODIFICADA: EDITAR PERFIL === -->
+			<a href="/barbero/editar-perfil" class="card-opcion">
+				<div class="card-icono">
+					<img src="/icons/user-edit.svg" alt="Editar Perfil" />
+				</div>
+				<h3>Editar Perfil</h3>
+				<p>Actualiza tu información personal y contraseña.</p>
+			</a>
+		</section>
 
-		<div class="card-opcion" on:click={cerrarSesion}>
-			<img src="/icons/Salir.svg" alt="Salir" />
-			<h3>Cerrar Sesión</h3>
-			<p>Finaliza tu sesión de manera segura.</p>
-		</div>
-	</section>
-
-	<!-- CONTENIDO DE LAS SUBRUTAS -->
-	<main class="content">
-		<slot />
-	</main>
+		<!-- === CONTENIDO DE LAS SUBRUTAS === -->
+		<main class="contenido-slot">
+			<slot />
+		</main>
+	</div>
 {:else}
-	<p>Verificando autorización...</p>
+	<div class="estado-verificacion">
+		<p>Verificando autorización...</p>
+	</div>
 {/if}
 
 <style>
-	.titulo-panel {
-		text-align: center;
-		font-size: 2.5rem;
-		margin-top: 3rem;
-		margin-bottom: 1rem;
-		font-weight: bold;
+	/* --- VARIABLES DE DISEÑO --- */
+	:root {
+		--color-primario: #c0a080;
+		--color-fondo: #1e1e1e;
+		--color-superficie: #2a2a2a;
+		--color-superficie-clara: #333;
+		--color-borde: #444;
+		--color-texto-principal: #e0e0e0;
+		--color-texto-secundario: #a0a0a0;
+		--sombra-profunda: 0 10px 25px rgba(0, 0, 0, 0.5);
+		--sombra-suave: 0 4px 12px rgba(0, 0, 0, 0.3);
+		--radio-borde: 12px;
 	}
 
-	.panel-usuario {
+	/* --- LAYOUT PRINCIPAL DEL PANEL --- */
+	.panel-layout {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		background-color: var(--color-fondo);
+		color: var(--color-texto-principal);
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	}
+
+	/* --- NAVBAR SUPERIOR --- */
+	.navbar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 2rem;
+		background-color: var(--color-superficie);
+		border-bottom: 1px solid var(--color-borde);
+		box-shadow: var(--sombra-suave);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+
+	.navbar-logo img {
+		height: 50px;
+	}
+
+	.navbar-usuario {
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+	}
+
+	.usuario-nombre {
+		font-weight: 500;
+		color: var(--color-texto-secundario);
+	}
+
+	.boton-logout {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: transparent;
+		border: 1px solid var(--color-borde);
+		color: var(--color-texto-secundario);
+		padding: 0.6rem 1.2rem;
+		border-radius: var(--radio-borde);
+		cursor: pointer;
+		font-weight: 600;
+		transition: all 0.2s ease;
+	}
+
+	.boton-logout img {
+		width: 18px;
+		filter: invert(70%);
+		transition: filter 0.2s ease;
+	}
+
+	.boton-logout:hover {
+		background-color: var(--color-primario);
+		color: var(--color-fondo);
+		border-color: var(--color-primario);
+	}
+
+	.boton-logout:hover img {
+		filter: invert(0%);
+	}
+
+	/* --- GRID DE OPCIONES --- */
+	.opciones-grid {
 		display: flex;
 		justify-content: center;
-		align-items: center;
-		gap: 2rem;
+		gap: 2.5rem;
 		padding: 4rem 2rem;
 		flex-wrap: wrap;
-		background-color: #252525;
+		background-color: #222; /* Un tono ligeramente diferente para el fondo del grid */
 	}
 
+	/* --- TARJETAS DE OPCIÓN --- */
 	.card-opcion {
 		text-decoration: none;
-		background-color: #333;
-		border-radius: 20px;
-		width: 280px;
+		background-color: var(--color-superficie);
+		border-radius: var(--radio-borde);
+		width: 300px;
 		padding: 2rem;
 		text-align: center;
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
-		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+		border: 1px solid var(--color-borde);
+		box-shadow: var(--sombra-suave);
 		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		transition:
+			transform 0.3s ease,
+			box-shadow 0.3s ease,
+			border-color 0.3s ease;
 	}
 
 	.card-opcion:hover {
-		transform: scale(1.05);
-		box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+		transform: translateY(-8px);
+		box-shadow: var(--sombra-profunda);
+		border-color: var(--color-primario);
+	}
+
+	.card-icono {
+		background-color: var(--color-superficie-clara);
+		border-radius: 50%;
+		width: 80px;
+		height: 80px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 1rem;
+		transition: background-color 0.3s ease;
+	}
+
+	.card-opcion:hover .card-icono {
+		background-color: var(--color-primario);
 	}
 
 	.card-opcion img {
-		width: 60px;
-		height: 60px;
-		margin-bottom: 1rem;
+		width: 40px;
+		height: 40px;
+		filter: invert(90%);
+		transition: filter 0.3s ease;
+	}
+
+	.card-opcion:hover img {
+		filter: invert(10%);
 	}
 
 	.card-opcion h3 {
-		font-size: 1.4rem;
-		margin-bottom: 0.5rem;
-		color: #C0A080;
+		font-size: 1.5rem;
+		margin: 0.5rem 0;
+		color: var(--color-primario);
+		font-weight: 600;
 	}
 
 	.card-opcion p {
 		font-size: 0.95rem;
-		color: #fffdfd;
+		color: var(--color-texto-secundario);
+		line-height: 1.5;
+		margin: 0;
 	}
 
-	.logo img {
-		height: 60px;
-		padding: 1rem;
+	/* --- CONTENEDOR DEL SLOT Y ESTADO DE VERIFICACIÓN --- */
+	.contenido-slot {
+		padding: 2rem;
+	}
+
+	.estado-verificacion {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+		font-size: 1.5rem;
+		color: var(--color-texto-secundario);
 	}
 </style>

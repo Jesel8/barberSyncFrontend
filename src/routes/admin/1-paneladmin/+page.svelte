@@ -71,7 +71,7 @@
 	</div>
 	<ul>
 		<li><a href="/">🏠 Inicio</a></li>
-		<li><a href="/dmin/barberos">✂️ Barberos</a></li>
+		<li><a href="/admin/barberos">✂️ Barberos</a></li>
 		<li><a href="/admin/agendas">📅 Agendas</a></li>
 		<li><a href="/admin/servicios">💈 Servicios</a></li>
 		<li><a href="/admin/resenas">⭐ Opiniones</a></li>

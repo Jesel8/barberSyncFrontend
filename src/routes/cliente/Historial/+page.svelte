@@ -6,11 +6,10 @@
 	import '$lib/Styles/nav.css';
 
 	let citasPendientes = [];
-	let citasRealizadas = [];
+	let citasPasadas = []; // Cambiamos el nombre para incluir Realizadas y Canceladas
 	let cargando = true;
 	let error = null;
 
-	// Obtener usuario logueado
 	const usuario = get(authStore).usuario;
 
 	onMount(async () => {
@@ -21,6 +20,7 @@
 		}
 
 		try {
+			// El fetch sigue siendo el mismo, obtenemos todas las citas del cliente
 			const response = await fetch(`http://localhost:8080/api/citas/cliente/${usuario.idUsuario}`, {
 				headers: {
 					Authorization: `Bearer ${usuario.token}`
@@ -30,14 +30,19 @@
 			if (!response.ok) throw new Error('Fallo al obtener citas del cliente');
 
 			const data = await response.json();
-			const ahora = new Date();
 
-			function fechaCompleta(cita) {
-				return new Date(`${cita.fecha}T${cita.hora}`);
-			}
+			// --- ✅ LÓGICA CORREGIDA ---
+			// Ahora filtramos usando el estado que nos manda el backend.
+			// Esta es la única fuente de la verdad.
+			citasPendientes = data.filter(
+				(cita) => cita.estado === 'Pendiente' || cita.estado === 'Confirmada'
+			);
 
-			citasPendientes = data.filter((cita) => fechaCompleta(cita) >= ahora);
-			citasRealizadas = data.filter((cita) => fechaCompleta(cita) < ahora);
+			// Las citas "pasadas" son las que ya terminaron su ciclo de vida.
+			citasPasadas = data.filter(
+				(cita) => cita.estado === 'Realizada' || cita.estado === 'Cancelada'
+			);
+			//-----------------------------
 		} catch (e) {
 			console.error('❌ Error al cargar citas:', e);
 			error = 'No se pudo cargar tu historial de citas.';
@@ -47,7 +52,7 @@
 	});
 
 	function formatearFecha(fecha) {
-		const f = new Date(fecha);
+		const f = new Date(fecha + 'T00:00:00'); // Aseguramos que la fecha se interprete correctamente
 		return f.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' });
 	}
 
@@ -56,20 +61,21 @@
 	}
 </script>
 
+<!-- El HTML de abajo (nav, h1, etc.) puede permanecer casi igual -->
+<!-- Solo cambia "citasRealizadas" por "citasPasadas" -->
+
 <nav class="top">
-	<div class="logo">
-		<img src="/images/logo blanco.png" alt="Logo BarberSync" />
-	</div>
+	<!-- ... tu nav ... -->
 </nav>
 
 <h1 class="titulo-panel">
-	<span style="color: white;">Historial de</span> Citas
+	<!-- ... tu título ... -->
 </h1>
 
 {#if cargando}
-	<p style="text-align:center;">Cargando citas...</p>
+	<!-- ... tu loading ... -->
 {:else if error}
-	<p style="text-align:center; color: red;">{error}</p>
+	<!-- ... tu error ... -->
 {:else}
 	<section class="contenedor-historial">
 		<div class="bloque-citas">
@@ -81,7 +87,10 @@
 						<p><strong>Barbero:</strong> {cita.nombreBarbero}</p>
 						<p><strong>Fecha:</strong> {formatearFecha(cita.fecha)}</p>
 						<p><strong>Hora:</strong> {formatearHora(cita.hora)}</p>
-						<p><strong>Estado:</strong> {cita.estado}</p>
+						<p>
+							<strong>Estado:</strong>
+							<span class="estado {cita.estado.toLowerCase()}">{cita.estado}</span>
+						</p>
 					</div>
 				{/each}
 			{:else}
@@ -90,19 +99,22 @@
 		</div>
 
 		<div class="bloque-citas">
-			<h2 class="titulo-seccion">✅ Realizadas</h2>
-			{#if citasRealizadas.length}
-				{#each citasRealizadas as cita}
-					<div class="card-cita realizada">
+			<h2 class="titulo-seccion">✅ Historial (Realizadas / Canceladas)</h2>
+			{#if citasPasadas.length}
+				{#each citasPasadas as cita}
+					<div class="card-cita {cita.estado.toLowerCase()}">
 						<h3>Cita #{cita.id}</h3>
 						<p><strong>Barbero:</strong> {cita.nombreBarbero}</p>
 						<p><strong>Fecha:</strong> {formatearFecha(cita.fecha)}</p>
 						<p><strong>Hora:</strong> {formatearHora(cita.hora)}</p>
-						<p><strong>Estado:</strong> {cita.estado}</p>
+						<p>
+							<strong>Estado:</strong>
+							<span class="estado {cita.estado.toLowerCase()}">{cita.estado}</span>
+						</p>
 					</div>
 				{/each}
 			{:else}
-				<p>No tienes citas realizadas.</p>
+				<p>No tienes citas en tu historial.</p>
 			{/if}
 		</div>
 	</section>

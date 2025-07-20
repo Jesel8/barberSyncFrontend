@@ -1,4 +1,3 @@
-// src/lib/api/especialidades.js
 import { apiFetch } from './fetcher';
 const ESPECIALIDADES_URL = 'http://localhost:8080/api/especialidades';
 const BARBERO_ESPECIALIDADES_URL = 'http://localhost:8080/api/barberos/especialidades';
@@ -48,4 +47,11 @@ export async function actualizarEspecialidadesDeBarbero(idBarbero, idsEspecialid
 		method: 'PUT',
 		body: JSON.stringify(payload)
 	});
+}
+
+/**
+ * [ADMIN] Obtiene todas las especialidades disponibles para asignar a los barberos.
+ */
+export async function obtenerEspecialidadesDisponibles() {
+	return apiFetch(ESPECIALIDADES_URL);
 }
