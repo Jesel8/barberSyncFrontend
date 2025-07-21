@@ -1,59 +1,57 @@
-// src/lib/api/barberos.js (o gestion-usuarios.js)
 import { apiFetch } from './fetcher';
-const BASE_URL = 'http://localhost:8080/api/usuarios';
-const ESPECIALIDADES_URL = 'http://localhost:8080/api/barberos'; // URL base para especialidades
+
+// URLs base claras y con un único propósito
+const USUARIOS_URL = 'http://localhost:8080/api/usuarios';
+const BARBEROS_URL = 'http://localhost:8080/api/barberos';
 
 /**
- * [ADMIN] Obtiene todos los usuarios con el rol de BARBERO.
+ * Obtiene la lista de todos los usuarios con el rol de BARBERO.
  */
 export async function obtenerBarberos() {
-	return apiFetch(`${BASE_URL}?rol=BARBERO`);
+	return apiFetch(BARBEROS_URL);
 }
 
 /**
- * [ADMIN] Crea un nuevo usuario (en este caso, un barbero).
- * El rolId para barbero debe ser conocido (ej. 2)
+ * Crea un nuevo usuario.
  */
 export async function crearBarbero(data, rolIdBarbero) {
 	const payload = { ...data, rolId: rolIdBarbero };
-	return apiFetch(BASE_URL, {
+	return apiFetch(USUARIOS_URL, {
 		method: 'POST',
 		body: JSON.stringify(payload)
 	});
 }
 
 /**
- * [ADMIN] Elimina un usuario (barbero) por su ID.
+ * Elimina un usuario (barbero) por su ID.
  */
 export async function eliminarBarbero(id) {
-	return apiFetch(`${BASE_URL}/${id}`, {
+	return apiFetch(`${USUARIOS_URL}/${id}`, {
 		method: 'DELETE'
 	});
 }
 
+// ==========================================================
+// ✅ LÓGICA CORRECTA PARA GESTIONAR ESPECIALIDADES DE UN BARBERO
+// ==========================================================
+
 /**
- * [ADMIN] Obtiene todas las especialidades disponibles de barberos.
+ * Obtiene las especialidades asignadas a UN barbero específico.
  */
-export async function obtenerEspecialidades() {
-	return apiFetch(ESPECIALIDADES_URL);
+export async function obtenerEspecialidadesDeBarbero(barberoId) {
+	// Llama a la URL que configuramos en el backend: GET /api/barberos/{id}/especialidades
+	return apiFetch(`${BARBEROS_URL}/${barberoId}/especialidades`);
 }
 
 /**
- * [ADMIN] Asigna una especialidad a un barbero.
+ * Asigna o actualiza la lista completa de especialidades de un barbero.
+ * Reemplaza todas las funciones antiguas.
  */
-export async function asignarEspecialidad(barberoId, especialidadData) {
-	const payload = { ...especialidadData };
-	return apiFetch(`${ESPECIALIDADES_URL}/${barberoId}/especialidades`, {
+export async function actualizarEspecialidadesDeBarbero(barberoId, listaDeIdsDeEspecialidades) {
+	// Llama a la URL y método correctos del backend que arreglamos antes.
+	// Envía la lista de IDs directamente en el cuerpo.
+	return apiFetch(`${BARBEROS_URL}/${barberoId}/especialidades`, {
 		method: 'POST',
-		body: JSON.stringify(payload)
-	});
-}
-
-/**
- * [ADMIN] Elimina una especialidad asignada a un barbero.
- */
-export async function eliminarEspecialidad(barberoId, especialidadId) {
-	return apiFetch(`${ESPECIALIDADES_URL}/${barberoId}/especialidades/${especialidadId}`, {
-		method: 'DELETE'
+		body: JSON.stringify(listaDeIdsDeEspecialidades)
 	});
 }

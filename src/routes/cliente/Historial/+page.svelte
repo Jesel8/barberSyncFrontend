@@ -2,13 +2,17 @@
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/authStore.js';
 	import { get } from 'svelte/store';
+	import ResenaModal from '$lib/components/ResenaModal.svelte';
 	import '$lib/Styles/Global.css';
 	import '$lib/Styles/nav.css';
 
 	let citasPendientes = [];
-	let citasPasadas = []; // Cambiamos el nombre para incluir Realizadas y Canceladas
+	let citasPasadas = [];
 	let cargando = true;
 	let error = null;
+
+	let citaParaResenar = null;
+	let mostrarModal = false;
 
 	const usuario = get(authStore).usuario;
 
@@ -20,7 +24,6 @@
 		}
 
 		try {
-			// El fetch sigue siendo el mismo, obtenemos todas las citas del cliente
 			const response = await fetch(`http://localhost:8080/api/citas/cliente/${usuario.idUsuario}`, {
 				headers: {
 					Authorization: `Bearer ${usuario.token}`
@@ -28,21 +31,15 @@
 			});
 
 			if (!response.ok) throw new Error('Fallo al obtener citas del cliente');
-
 			const data = await response.json();
 
-			// --- ✅ LÓGICA CORREGIDA ---
-			// Ahora filtramos usando el estado que nos manda el backend.
-			// Esta es la única fuente de la verdad.
 			citasPendientes = data.filter(
 				(cita) => cita.estado === 'Pendiente' || cita.estado === 'Confirmada'
 			);
 
-			// Las citas "pasadas" son las que ya terminaron su ciclo de vida.
 			citasPasadas = data.filter(
 				(cita) => cita.estado === 'Realizada' || cita.estado === 'Cancelada'
 			);
-			//-----------------------------
 		} catch (e) {
 			console.error('❌ Error al cargar citas:', e);
 			error = 'No se pudo cargar tu historial de citas.';
@@ -51,8 +48,29 @@
 		}
 	});
 
+	function abrirModalResena(idCita) {
+		citaParaResenar = idCita;
+		mostrarModal = true;
+	}
+
+	function cerrarModal() {
+		mostrarModal = false;
+		citaParaResenar = null;
+	}
+
+	function handleResenaEnviada(event) {
+		const idCitaEnviada = event.detail.idCita;
+		citasPasadas = citasPasadas.map((cita) => {
+			if (cita.id === idCitaEnviada) {
+				return { ...cita, tieneResena: true };
+			}
+			return cita;
+		});
+		cerrarModal();
+	}
+
 	function formatearFecha(fecha) {
-		const f = new Date(fecha + 'T00:00:00'); // Aseguramos que la fecha se interprete correctamente
+		const f = new Date(fecha + 'T00:00:00');
 		return f.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' });
 	}
 
@@ -61,21 +79,16 @@
 	}
 </script>
 
-<!-- El HTML de abajo (nav, h1, etc.) puede permanecer casi igual -->
-<!-- Solo cambia "citasRealizadas" por "citasPasadas" -->
-
 <nav class="top">
-	<!-- ... tu nav ... -->
+	<!-- Tu navegación -->
 </nav>
 
-<h1 class="titulo-panel">
-	<!-- ... tu título ... -->
-</h1>
+<h1 class="titulo-panel">Historial de Citas</h1>
 
 {#if cargando}
-	<!-- ... tu loading ... -->
+	<p>Cargando tus citas...</p>
 {:else if error}
-	<!-- ... tu error ... -->
+	<p>{error}</p>
 {:else}
 	<section class="contenedor-historial">
 		<div class="bloque-citas">
@@ -102,7 +115,15 @@
 			<h2 class="titulo-seccion">✅ Historial (Realizadas / Canceladas)</h2>
 			{#if citasPasadas.length}
 				{#each citasPasadas as cita}
+					<!-- Bloque de depuración para inspeccionar cada cita -->
+					<div style="background: #111; padding: 5px; margin-bottom: 5px; border: 1px solid red;">
+						<p>Debug Cita #{cita.id}</p>
+						<p>Estado desde API: "{cita.estado}"</p>
+						<p>¿Condición se cumple?: {cita.estado === 'Realizada' && !cita.tieneResena}</p>
+					</div>
+
 					<div class="card-cita {cita.estado.toLowerCase()}">
+						<!-- ... el resto del contenido de tu card ... -->
 						<h3>Cita #{cita.id}</h3>
 						<p><strong>Barbero:</strong> {cita.nombreBarbero}</p>
 						<p><strong>Fecha:</strong> {formatearFecha(cita.fecha)}</p>
@@ -111,6 +132,14 @@
 							<strong>Estado:</strong>
 							<span class="estado {cita.estado.toLowerCase()}">{cita.estado}</span>
 						</p>
+
+						{#if cita.estado === 'Realizada' && !cita.tieneResena}
+							<button class="btn-resena" on:click={() => abrirModalResena(cita.id)}>
+								Dejar Reseña
+							</button>
+						{:else if cita.tieneResena}
+							<p class="resena-enviada">¡Gracias por tu reseña!</p>
+						{/if}
 					</div>
 				{/each}
 			{:else}
@@ -118,6 +147,14 @@
 			{/if}
 		</div>
 	</section>
+{/if}
+
+{#if mostrarModal}
+	<ResenaModal
+		idCita={citaParaResenar}
+		on:close={cerrarModal}
+		on:resenaEnviada={handleResenaEnviada}
+	/>
 {/if}
 
 <style>
@@ -154,5 +191,29 @@
 	.card-cita h3 {
 		margin: 0 0 0.5rem;
 		color: #c0a080;
+	}
+	.estado.realizada {
+		color: #28a745;
+	}
+	.estado.cancelada {
+		color: #dc3545;
+	}
+	.btn-resena {
+		background-color: #007bff;
+		color: white;
+		border: none;
+		padding: 8px 12px;
+		border-radius: 5px;
+		cursor: pointer;
+		margin-top: 10px;
+		transition: background-color 0.3s;
+	}
+	.btn-resena:hover {
+		background-color: #0056b3;
+	}
+	.resena-enviada {
+		margin-top: 10px;
+		font-style: italic;
+		color: #28a745;
 	}
 </style>

@@ -1,17 +1,22 @@
 <script>
 	import { onMount } from 'svelte';
 
-	// CORRECCIÓN DE IMPORTS
-	import { obtenerBarberos, crearBarbero, eliminarBarbero } from '$lib/api/barberos';
+	// Importamos TODO lo relacionado con el recurso BARBERO desde un solo lugar.
+	import {
+		obtenerBarberos,
+		crearBarbero,
+		eliminarBarbero,
+		obtenerEspecialidadesDeBarbero,
+		actualizarEspecialidadesDeBarbero
+	} from '$lib/api/barberos.js';
 
+	// Importamos TODO lo relacionado con el CATÁLOGO GENERAL de especialidades
+	// desde su propio archivo dedicado.
 	import {
 		obtenerEspecialidadesDisponibles,
 		crearEspecialidad,
-		eliminarEspecialidad,
-		obtenerEspecialidadesDeBarbero, // <-- CORREGIDO: Importamos la función correcta
-		actualizarEspecialidadesDeBarbero // <-- CORREGIDO: Importamos la función para guardar
-	} from '$lib/api/especialidades';
-
+		eliminarEspecialidad
+	} from '$lib/api/especialidades.js';
 	// --- ESTADO GENERAL ---
 	let barberos = [];
 	let cargando = true;
@@ -67,7 +72,7 @@
 	async function crearNuevoBarbero() {
 		try {
 			// <-- CORREGIDO: Añadimos el ID del rol de Barbero (ajústalo si es diferente)
-			await crearBarbero(nuevoBarbero, 2);
+			await crearBarbero(nuevoBarbero, 1);
 			mostrarModalCrearBarbero = false;
 			nuevoBarbero = {
 				primerNombre: '',

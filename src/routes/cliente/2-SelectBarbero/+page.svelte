@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	// Asumimos que esta función ya existe y funciona (hace GET a /api/usuarios?rol=BARBERO)
-	import { obtenerBarberos } from '$lib/api/barberos.js';
+	// ✅ Importamos AMBAS funciones: para obtener la lista y para obtener las especialidades de CADA uno
+	import { obtenerBarberos, obtenerEspecialidadesDeBarbero } from '$lib/api/barberos.js';
 	import { citaStore } from '$lib/stores/citaStore.js';
 
 	// --- ESTADO ---
@@ -12,9 +12,31 @@
 
 	onMount(async () => {
 		try {
-			// Reiniciamos el estado de la cita por si el usuario vuelve a esta página
+			// Reiniciamos el estado de la cita
 			citaStore.reset();
-			barberos = await obtenerBarberos();
+
+			// --- LÓGICA DE CARGA MEJORADA ---
+
+			// 1. Obtenemos la lista base de barberos
+			const barberosBase = await obtenerBarberos();
+
+			// 2. Creamos una promesa para buscar las especialidades de CADA barbero
+			const promesasDeEspecialidades = barberosBase.map((barbero) =>
+				obtenerEspecialidadesDeBarbero(barbero.id)
+			);
+
+			// 3. Ejecutamos todas las peticiones en paralelo para máxima eficiencia
+			const resultadosEspecialidades = await Promise.all(promesasDeEspecialidades);
+
+			// 4. Unimos los datos: a cada barbero le añadimos su lista de especialidades
+			barberos = barberosBase.map((barbero, index) => {
+				return {
+					...barbero,
+					// Nos aseguramos de que sea un array, incluso si no tiene especialidades
+					especialidades: resultadosEspecialidades[index]?.especialidades || []
+				};
+			});
+			// --- FIN DE LA LÓGICA DE CARGA ---
 		} catch (e) {
 			console.error('Error al cargar barberos:', e);
 			error = 'No se pudieron cargar los barberos. Inténtalo de nuevo más tarde.';
@@ -24,23 +46,20 @@
 	});
 
 	function handleSeleccionarBarbero(barbero) {
-		// Guardamos la información relevante del barbero en nuestra tienda
 		citaStore.seleccionarBarbero({
 			id: barbero.id,
 			nombreCompleto: `${barbero.primerNombre} ${barbero.primerApellido}`
 		});
-
-		// Redirigimos al usuario al siguiente paso del flujo
 		goto('/cliente/3-selectservice');
 	}
 </script>
 
 <main class="contenedor-principal">
-<nav class="top">
-  <div class="logo">
-    <img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
-  </div>
-</nav>
+	<nav class="top">
+		<div class="logo">
+			<img src="/images/logo blanco.png" alt="Logo BarberSync" />
+		</div>
+	</nav>
 
 	<div class="paso-indicador">Paso 1 de 4</div>
 	<h1>Selecciona tu Barbero</h1>
@@ -60,7 +79,18 @@
 						class="foto-barbero"
 					/>
 					<span class="nombre-barbero">{barbero.primerNombre} {barbero.primerApellido}</span>
-					<!-- Podríamos añadir especialidades aquí en el futuro -->
+
+					<!-- ✅ AQUÍ MOSTRAMOS LAS ESPECIALIDADES -->
+					<div class="especialidades-container">
+						{#if barbero.especialidades && barbero.especialidades.length > 0}
+							{#each barbero.especialidades as especialidad (especialidad)}
+								<span class="especialidad-tag">{especialidad}</span>
+							{/each}
+						{:else}
+							<!-- Opcional: mostrar un texto si no tiene especialidades -->
+							<span class="sin-especialidades">Generalista</span>
+						{/if}
+					</div>
 				</button>
 			{/each}
 		</div>
@@ -68,6 +98,7 @@
 </main>
 
 <style>
+	/* ... Tus estilos existentes ... */
 	.contenedor-principal {
 		max-width: 900px;
 		margin: 2rem auto;
@@ -106,6 +137,8 @@
 		transition: all 0.2s ease-in-out;
 		color: white;
 		text-align: center;
+		/* ✅ Hacemos que la tarjeta crezca si tiene más contenido */
+		min-height: 280px;
 	}
 	.card-barbero:hover {
 		transform: translateY(-8px);
@@ -118,10 +151,14 @@
 		border-radius: 50%;
 		background-color: #4a4a4a;
 		border: 3px solid #c0a080;
+		/* ✅ Aseguramos que no se encoja */
+		flex-shrink: 0;
 	}
 	.nombre-barbero {
 		font-size: 1.1rem;
 		font-weight: 600;
+		/* ✅ Espacio para que respire el texto */
+		margin-bottom: 0.5rem;
 	}
 	.error-message {
 		color: #ff6b6b;
@@ -139,5 +176,32 @@
 		to {
 			transform: rotate(360deg);
 		}
+	}
+
+	/* ✅ --- NUEVOS ESTILOS PARA LAS ETIQUETAS DE ESPECIALIDAD --- */
+
+	.especialidades-container {
+		display: flex;
+		flex-wrap: wrap; /* Para que las etiquetas pasen a la siguiente línea si no caben */
+		justify-content: center;
+		gap: 0.5rem; /* Espacio entre etiquetas */
+		width: 100%;
+		margin-top: auto; /* Empuja las especialidades a la parte inferior de la tarjeta */
+	}
+
+	.especialidad-tag {
+		background-color: #4a3f30; /* Un color de fondo sutil */
+		color: #e0c0a0; /* Color de texto que resalta */
+		padding: 0.25rem 0.6rem;
+		border-radius: 999px; /* Para que sea siempre una píldora */
+		font-size: 0.8rem;
+		font-weight: 500;
+		border: 1px solid #7c6853;
+	}
+
+	.sin-especialidades {
+		color: #888;
+		font-style: italic;
+		font-size: 0.9rem;
 	}
 </style>
