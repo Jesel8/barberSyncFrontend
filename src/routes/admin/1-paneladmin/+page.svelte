@@ -71,6 +71,8 @@
 		<li><a href="/admin/agendas">📅 Agendas</a></li>
 		<li><a href="/admin/servicios">💈 Servicios</a></li>
 		<li><a href="/admin/resenas">⭐ Opiniones</a></li>
+		<!--Linea para reporte-->
+		<li><a href="/admin/reporte">📊 Reportes</a></li>
 	</ul>
 </div>
 

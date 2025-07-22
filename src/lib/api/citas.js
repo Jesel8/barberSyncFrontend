@@ -1,60 +1,70 @@
 // src/lib/api/citas.js
+
+// --- TODO TU CÓDIGO EXISTENTE SE MANTIENE INTACTO ---
 import { apiFetch } from './fetcher';
 const BASE_URL = 'http://localhost:8080/api';
 
 // --- Helper para formatear fechas ---
 function formatDateForAPI(date) {
+	// ... (sin cambios)
 	const year = date.getFullYear();
 	const month = String(date.getMonth() + 1).padStart(2, '0');
 	const day = String(date.getDate()).padStart(2, '0');
 	return `${year}-${month}-${day}`;
 }
-
-/**
- * [CLIENTE] Obtiene horarios disponibles.
- */
-// VERSIÓN GET (LA QUE FUNCIONARÁ CON TU CONTROLLER MODIFICADO)
 export async function obtenerDisponibilidad(idBarbero, fecha, idServicios) {
+	// ... (sin cambios)
 	const fechaFormateada = formatDateForAPI(fecha);
-
-	// Construimos los parámetros de la URL
 	const params = new URLSearchParams({ fecha: fechaFormateada });
 	idServicios.forEach((id) => params.append('idServicios', id));
-
-	// Creamos la URL completa y hacemos la petición GET (método por defecto de apiFetch)
 	const url = `${BASE_URL}/disponibilidad/barbero/${idBarbero}?${params.toString()}`;
 	return apiFetch(url);
 }
-
-/**
- * [ADMIN] Obtiene todas las citas para una fecha.
- */
 export async function obtenerTodasLasCitasPorFecha(fecha) {
+	// ... (sin cambios)
 	const fechaFormateada = formatDateForAPI(fecha);
 	return apiFetch(`${BASE_URL}/citas/fecha/${fechaFormateada}`);
 }
-
-/**
- * [CLIENTE/ADMIN] Crea una nueva cita.
- */
 export async function crearCita(datosCita) {
+	// ... (sin cambios)
 	return apiFetch(`${BASE_URL}/citas`, {
 		method: 'POST',
 		body: JSON.stringify(datosCita)
 	});
 }
+export async function obtenerCitasDeBarbero(idBarbero) {
+	// ... (sin cambios)
+	return apiFetch(`${BASE_URL}/citas/barbero/${idBarbero}`);
+}
+export async function obtenerAgendaDiaria(idBarbero, fecha) {
+	// ... (sin cambios)
+	const fechaFormateada = formatDateForAPI(fecha);
+	return apiFetch(`${BASE_URL}/citas/barbero/${idBarbero}/fecha/${fechaFormateada}`);
+}
+
+// --- ✨ NUEVAS FUNCIONES AÑADIDAS (SIN MODIFICAR LO ANTERIOR) ✨ ---
 
 /**
- * [BARBERO] Obtiene las citas asignadas al barbero.
+ * [BARBERO/ADMIN] Actualiza el estado de una cita (ej. a 'Completada' o 'Cancelada').
+ * @param {number} idCita El ID de la cita.
+ * @param {string} nuevoEstado El nuevo estado.
+ * @returns {Promise<any>}
  */
-export async function obtenerCitasDeBarbero(idBarbero) {
-	return apiFetch(`${BASE_URL}/citas/barbero/${idBarbero}`);
+export async function actualizarEstadoCita(idCita, nuevoEstado) {
+	const params = new URLSearchParams({ estado: nuevoEstado });
+	const url = `${BASE_URL}/citas/${idCita}/estado?${params.toString()}`;
+	return apiFetch(url, {
+		method: 'PATCH'
+	});
 }
 
 /**
- * [BARBERO] Obtiene la agenda de un día específico para el barbero.
+ * [BARBERO/ADMIN] Elimina permanentemente una cita.
+ * @param {number} idCita El ID de la cita a eliminar.
+ * @returns {Promise<any>}
  */
-export async function obtenerAgendaDiaria(idBarbero, fecha) {
-	const fechaFormateada = formatDateForAPI(fecha);
-	return apiFetch(`${BASE_URL}/citas/barbero/${idBarbero}/fecha/${fechaFormateada}`);
+export async function eliminarCita(idCita) {
+	return apiFetch(`${BASE_URL}/citas/${idCita}`, {
+		method: 'DELETE'
+	});
 }

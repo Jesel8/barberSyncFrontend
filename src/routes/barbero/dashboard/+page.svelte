@@ -65,7 +65,7 @@
 			</a>
 
 			<!-- === TARJETA MODIFICADA: EDITAR PERFIL === -->
-			<a href="/barbero/editar-perfil" class="card-opcion">
+			<a href="/barbero/perfil" class="card-opcion">
 				<div class="card-icono">
 					<img src="/icons/user-edit.svg" alt="Editar Perfil" />
 				</div>

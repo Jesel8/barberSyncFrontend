@@ -1,14 +1,16 @@
+<!-- ================================================================= -->
+<!-- === CÓDIGO FINAL PARA LA TABLA DE GESTIÓN DE RESEÑAS (SVELTE) === -->
+<!-- ================================================================= -->
 <script>
 	import { onMount } from 'svelte';
-	// 👇 Importamos las nuevas funciones
 	import { obtenerTodasLasResenas, eliminarResena } from '$lib/api/resenas.js';
 
-	// --- ESTADO DEL COMPONENTE ---
+	// --- ESTADO DEL COMPONENTE (sin cambios) ---
 	let resenas = [];
 	let isLoading = true;
 	let error = null;
 
-	// --- LÓGICA ---
+	// --- LÓGICA (sin cambios) ---
 	onMount(() => {
 		cargarResenas();
 	});
@@ -18,8 +20,10 @@
 			isLoading = true;
 			error = null;
 			resenas = await obtenerTodasLasResenas();
+			// Log para verificar que el campo 'fechaResena' llega correctamente
+			console.log('Reseñas recibidas del backend:', resenas);
 		} catch (e) {
-			console.error("Error al cargar las reseñas:", e);
+			console.error('Error al cargar las reseñas:', e);
 			error = e.message;
 		} finally {
 			isLoading = false;
@@ -30,16 +34,14 @@
 		if (confirm(`¿Estás seguro de que quieres eliminar la reseña de "${cliente}"?`)) {
 			try {
 				await eliminarResena(id);
-				// Actualizamos la UI al instante sin recargar
-				resenas = resenas.filter(r => r.id !== id);
+				resenas = resenas.filter((r) => r.id !== id);
 			} catch (e) {
-				console.error("Error al eliminar la reseña:", e);
+				console.error('Error al eliminar la reseña:', e);
 				alert(`No se pudo eliminar la reseña: ${e.message}`);
 			}
 		}
 	}
 
-	// Función para renderizar estrellas
 	function renderEstrellas(calificacion) {
 		return '⭐'.repeat(calificacion) + '☆'.repeat(5 - calificacion);
 	}
@@ -47,7 +49,7 @@
 
 <main>
 	<h1>Gestión de Opiniones y Reseñas</h1>
-	
+
 	{#if isLoading}
 		<p>Cargando reseñas...</p>
 	{:else if error}
@@ -67,16 +69,32 @@
 				</tr>
 			</thead>
 			<tbody>
-				<!-- Ordenamos por las más recientes primero -->
-				{#each resenas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)) as resena (resena.id)}
+				<!-- ================================================ -->
+				<!-- ✅ CORRECCIÓN #1: Usamos 'fechaResena' para ordenar -->
+				<!-- ================================================ -->
+				{#each resenas.sort((a, b) => new Date(b.fechaResena) - new Date(a.fechaResena)) as resena (resena.id)}
 					<tr>
 						<td>{resena.nombreCliente}</td>
 						<td>{resena.nombreBarbero}</td>
 						<td class="estrellas">{renderEstrellas(resena.calificacion)}</td>
 						<td class="comentario-celda">{resena.comentario || '-'}</td>
-						<td>{new Date(resena.fecha).toLocaleDateString()}</td>
+
+						<!-- ================================================== -->
+						<!-- ✅ CORRECCIÓN #2: Usamos 'fechaResena' para mostrar -->
+						<!-- ================================================== -->
+						<td>
+							{new Date(resena.fechaResena).toLocaleDateString('es-MX', {
+								year: 'numeric',
+								month: 'long',
+								day: 'numeric'
+							})}
+						</td>
+
 						<td class="acciones-celda">
-							<button class="btn-accion btn-delete" on:click={() => handleEliminar(resena.id, resena.nombreCliente)}>
+							<button
+								class="btn-accion btn-delete"
+								on:click={() => handleEliminar(resena.id, resena.nombreCliente)}
+							>
 								Eliminar
 							</button>
 						</td>
@@ -123,23 +141,48 @@
 	.tabla-resenas tbody tr:hover {
 		background-color: #333;
 	}
-	.col-comentario { width: 40%; }
-	.col-calificacion { text-align: center; }
-	.estrellas { font-size: 1.2rem; text-align: center; letter-spacing: 2px; }
+	.col-comentario {
+		width: 40%;
+	}
+	.col-calificacion {
+		text-align: center;
+	}
+	.estrellas {
+		font-size: 1.2rem;
+		text-align: center;
+		letter-spacing: 2px;
+	}
 	.comentario-celda {
 		font-style: italic;
 		color: #ccc;
 		line-height: 1.4;
 	}
-	.acciones-celda { text-align: center; }
-	.btn-accion {
-		background: none; border: 1px solid; padding: 0.4rem 0.8rem;
-		border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s;
+	.acciones-celda {
+		text-align: center;
 	}
-	.btn-delete { color: #ff6b6b; border-color: #ff6b6b; }
-	.btn-delete:hover { background-color: #ff6b6b; color: black; }
+	.btn-accion {
+		background: none;
+		border: 1px solid;
+		padding: 0.4rem 0.8rem;
+		border-radius: 6px;
+		cursor: pointer;
+		font-weight: bold;
+		transition: all 0.2s;
+	}
+	.btn-delete {
+		color: #ff6b6b;
+		border-color: #ff6b6b;
+	}
+	.btn-delete:hover {
+		background-color: #ff6b6b;
+		color: black;
+	}
 	.error-message {
-		color: #ff6b6b; background-color: rgba(255, 107, 107, 0.1);
-		border: 1px solid #ff6b6b; padding: 1rem; border-radius: 6px; text-align: center;
+		color: #ff6b6b;
+		background-color: rgba(255, 107, 107, 0.1);
+		border: 1px solid #ff6b6b;
+		padding: 1rem;
+		border-radius: 6px;
+		text-align: center;
 	}
 </style>
