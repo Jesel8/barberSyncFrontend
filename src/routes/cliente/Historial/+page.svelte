@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
-	import { authStore } from '$lib/stores/authStore.js';
 	import { get } from 'svelte/store';
-	import ResenaModal from '$lib/components/ResenaModal.svelte';
+	import { goto } from '$app/navigation'; // ✅ Navegación a página de reseña
+	import { authStore } from '$lib/stores/authStore.js';
 	import '$lib/Styles/Global.css';
 	import '$lib/Styles/nav.css';
 
@@ -10,9 +10,6 @@
 	let citasPasadas = [];
 	let cargando = true;
 	let error = null;
-
-	let citaParaResenar = null;
-	let mostrarModal = false;
 
 	const usuario = get(authStore).usuario;
 
@@ -48,30 +45,18 @@
 		}
 	});
 
-	function abrirModalResena(idCita) {
-		citaParaResenar = idCita;
-		mostrarModal = true;
-	}
-
-	function cerrarModal() {
-		mostrarModal = false;
-		citaParaResenar = null;
-	}
-
-	function handleResenaEnviada(event) {
-		const idCitaEnviada = event.detail.idCita;
-		citasPasadas = citasPasadas.map((cita) => {
-			if (cita.id === idCitaEnviada) {
-				return { ...cita, tieneResena: true };
-			}
-			return cita;
-		});
-		cerrarModal();
+	// ✅ Reemplazo del modal por navegación
+	function irAResena(idCita) {
+		goto(`/cliente/resena/${idCita}`);
 	}
 
 	function formatearFecha(fecha) {
 		const f = new Date(fecha + 'T00:00:00');
-		return f.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'short' });
+		return f.toLocaleDateString('es-MX', {
+			weekday: 'long',
+			day: 'numeric',
+			month: 'short'
+		});
 	}
 
 	function formatearHora(hora) {
@@ -115,15 +100,7 @@
 			<h2 class="titulo-seccion">✅ Historial (Realizadas / Canceladas)</h2>
 			{#if citasPasadas.length}
 				{#each citasPasadas as cita}
-					<!-- Bloque de depuración para inspeccionar cada cita -->
-					<div style="background: #111; padding: 5px; margin-bottom: 5px; border: 1px solid red;">
-						<p>Debug Cita #{cita.id}</p>
-						<p>Estado desde API: "{cita.estado}"</p>
-						<p>¿Condición se cumple?: {cita.estado === 'Realizada' && !cita.tieneResena}</p>
-					</div>
-
 					<div class="card-cita {cita.estado.toLowerCase()}">
-						<!-- ... el resto del contenido de tu card ... -->
 						<h3>Cita #{cita.id}</h3>
 						<p><strong>Barbero:</strong> {cita.nombreBarbero}</p>
 						<p><strong>Fecha:</strong> {formatearFecha(cita.fecha)}</p>
@@ -134,9 +111,7 @@
 						</p>
 
 						{#if cita.estado === 'Realizada' && !cita.tieneResena}
-							<button class="btn-resena" on:click={() => abrirModalResena(cita.id)}>
-								Dejar Reseña
-							</button>
+							<button class="btn-resena" on:click={() => irAResena(cita.id)}> Dejar Reseña </button>
 						{:else if cita.tieneResena}
 							<p class="resena-enviada">¡Gracias por tu reseña!</p>
 						{/if}
@@ -147,14 +122,6 @@
 			{/if}
 		</div>
 	</section>
-{/if}
-
-{#if mostrarModal}
-	<ResenaModal
-		idCita={citaParaResenar}
-		on:close={cerrarModal}
-		on:resenaEnviada={handleResenaEnviada}
-	/>
 {/if}
 
 <style>

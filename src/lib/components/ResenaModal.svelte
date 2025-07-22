@@ -70,10 +70,11 @@
 		window.addEventListener('keydown', handleKeydown);
 		return () => window.removeEventListener('keydown', handleKeydown);
 	});
+	console.log('📦 ResenaModal montado con ID:', idCita);
 </script>
 
 <!-- Tu HTML puede permanecer casi igual, solo cambia 'estrellas' por 'calificacion' -->
-<div class="modal-backdrop" on:click|self={cerrar}>
+<div class="modal" on:click|self={cerrar}>
 	<div class="modal">
 		<h2>Deja tu Reseña</h2>
 
@@ -112,6 +113,7 @@
 </div>
 
 <style>
+	/*
 	.modal-backdrop {
 		position: fixed;
 		top: 0;
@@ -122,9 +124,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		z-index: 1000;
+		z-index: 9999;
 	}
-
+	*/
 	.modal {
 		background-color: #1e1e1e;
 		padding: 2rem;

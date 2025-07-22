@@ -1,4 +1,6 @@
 <script>
+	// --- SIN CAMBIOS EN LA LÓGICA ---
+	// Tu código JavaScript permanece intacto ya que funciona perfectamente.
 	import '$lib/Styles/Global.css';
 	import '$lib/Styles/nav.css';
 	import '$lib/Styles/aside.css';
@@ -11,17 +13,14 @@
 	let totalServicios = 0;
 	let totalCitas = 0;
 	let totalResenas = 0;
-	let cargando = true; // Añadimos un estado de carga
+	let cargando = true;
 
 	onMount(async () => {
-		// 1. Inicializa el store y suscríbete
 		authStore.init();
 		const unsubscribe = authStore.subscribe((value) => {
 			usuario = value.usuario;
 		});
 
-		// 2. Si hay un usuario, busca los datos del dashboard
-		// El token se obtendrá dentro de la función obtenerResumenDashboard
 		try {
 			const resumen = await obtenerResumenDashboard();
 			totalBarberos = resumen.totalBarberos;
@@ -30,19 +29,17 @@
 			totalResenas = resumen.totalResenas;
 		} catch (error) {
 			console.error('Fallo al cargar datos del dashboard:', error);
-			// Podrías mostrar un mensaje de error en la UI
 		} finally {
-			cargando = false; // Termina la carga, haya éxito o error
+			cargando = false;
 		}
 
-		// 3. Limpieza al desmontar el componente
 		return () => unsubscribe();
 	});
 </script>
 
+<!-- LA ESTRUCTURA HTML PARA LA NAVEGACIÓN ES CORRECTA Y NO REQUIERE CAMBIOS -->
 <input type="checkbox" id="menu-toggle" class="menu-toggle" />
 
-<!-- NAVBAR SUPERIOR -->
 <nav class="top">
 	<label for="menu-toggle" class="menu-icon">
 		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
@@ -51,13 +48,12 @@
 		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
 	</div>
 	<div class="salir">
-		<a href="/">
+		<a href="/" title="Cerrar Sesión">
 			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
 		</a>
 	</div>
 </nav>
 
-<!-- MENÚ LATERAL -->
 <div class="menu">
 	<div class="fotoadmin">
 		<img src="/src/static/assets/icons/userfoto.svg" alt="Foto admin" />
@@ -70,7 +66,7 @@
 		</p>
 	</div>
 	<ul>
-		<li><a href="/">🏠 Inicio</a></li>
+		<li><a href="/admin/1-paneladmin">🏠 Inicio</a></li>
 		<li><a href="/admin/barberos">✂️ Barberos</a></li>
 		<li><a href="/admin/agendas">📅 Agendas</a></li>
 		<li><a href="/admin/servicios">💈 Servicios</a></li>
@@ -78,120 +74,266 @@
 	</ul>
 </div>
 
-<!-- CONTENIDO PRINCIPAL -->
+<!-- EL CONTENIDO PRINCIPAL NO REQUIERE CAMBIOS EN SU ESTRUCTURA -->
 <main class="contenido-admin">
-	<h1 class="titulo-principal">Dashboard de Administrador</h1>
-
-	<!-- 
-        Iniciamos un bloque condicional.
-        Svelte evaluará la variable 'cargando'.
-    -->
+	<!-- ... -->
+	<header class="dashboard-header">
+		<h1 class="titulo-principal">Resumen del Sistema</h1>
+		<p class="subtitulo">Una vista rápida de la actividad en BarberSync.</p>
+	</header>
 	{#if cargando}
-		<!-- 
-            Mientras 'cargando' sea 'true', se mostrará este párrafo.
-            Le damos un estilo para que se vea bien.
-        -->
-		<p class="mensaje-carga">Cargando datos del dashboard...</p>
+		<div class="contenedor-carga">
+			<p class="mensaje-carga">Cargando datos...</p>
+		</div>
 	{:else}
-		<!-- 
-            Una vez que la carga termina y 'cargando' se vuelve 'false',
-            Svelte mostrará este bloque, que contiene tus tarjetas con los datos ya actualizados.
-        -->
-		<div class="grid-cards">
+		<section class="grid-cards">
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/3039/3039407.png" alt="Barberos" />
-				<div>
-					<h3>Barberos registrados</h3>
+				<img
+					src="https://cdn-icons-png.flaticon.com/128/3039/3039407.png"
+					alt="Icono de Barberos"
+				/>
+				<div class="card-content">
+					<h3>Barberos Registrados</h3>
 					<p>{totalBarberos}</p>
 				</div>
 			</div>
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/2942/2942911.png" alt="Servicios" />
-				<div>
-					<h3>Servicios activos</h3>
+				<img
+					src="https://cdn-icons-png.flaticon.com/128/2942/2942911.png"
+					alt="Icono de Servicios"
+				/>
+				<div class="card-content">
+					<h3>Servicios Activos</h3>
 					<p>{totalServicios}</p>
 				</div>
 			</div>
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/10736/10736087.png" alt="Citas" />
-				<div>
-					<h3>Citas agendadas</h3>
+				<img src="https://cdn-icons-png.flaticon.com/128/10736/10736087.png" alt="Icono de Citas" />
+				<div class="card-content">
+					<h3>Citas Totales</h3>
 					<p>{totalCitas}</p>
 				</div>
 			</div>
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/2462/2462719.png" alt="Opiniones" />
-				<div>
-					<h3>Opiniones recibidas</h3>
+				<img
+					src="https://cdn-icons-png.flaticon.com/128/2462/2462719.png"
+					alt="Icono de Opiniones"
+				/>
+				<div class="card-content">
+					<h3>Opiniones Recibidas</h3>
 					<p>{totalResenas}</p>
 				</div>
 			</div>
-		</div>
+		</section>
 	{/if}
-	<!-- Fin del bloque condicional -->
 </main>
 
 <style>
-	/* CENTRADO GENERAL Y MEJORAS DE ESTILO */
-	.contenido-admin {
-		margin-left: 260px;
+	/* ----- INICIO DE LOS ESTILOS CORREGIDOS ----- */
+
+	/* Base de navegación */
+	.menu-toggle {
+		display: none;
+	}
+
+	.top {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 60px;
+		background-color: #252525;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 1rem;
+		z-index: 1000;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+	}
+	.logo img {
+		height: 40px;
+	}
+	.salir img {
+		height: 28px;
+	}
+
+	/* --- CAMBIO 1: El icono del menú ahora SIEMPRE está visible --- */
+	.menu-icon {
+		cursor: pointer;
+		/* Aseguramos que siempre sea un bloque para poder hacer clic */
+		display: block;
+		padding-right: 15px; /* Un poco de espacio */
+	}
+
+	/* --- CAMBIO 2: El menú está OCULTO por defecto --- */
+	.menu {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 250px;
+		height: 100vh;
+		background-color: #252525;
+		padding-top: 1rem;
+		z-index: 999;
+		/* Lo movemos fuera de la pantalla hacia la izquierda */
+		transform: translateX(-100%);
+		transition: transform 0.3s ease-in-out;
+	}
+
+	/* --- CAMBIO 3: Cuando se hace clic, el menú aparece --- */
+	.menu-toggle:checked ~ .menu {
+		transform: translateX(0);
+	}
+
+	.fotoadmin {
+		text-align: center;
+		margin-bottom: 2rem;
 		margin-top: 60px;
-		padding: 2rem;
+	}
+	.fotoadmin img {
+		width: 80px;
+		height: 80px;
+		border-radius: 50%;
+		border: 2px solid #c0a080;
+	}
+	.nombre-usuario {
+		color: white;
+		margin-top: 0.5rem;
+		font-weight: bold;
+	}
+
+	.menu ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.menu ul li a {
+		display: block;
+		padding: 1rem 1.5rem;
+		color: #a0a0a0;
+		text-decoration: none;
+		transition:
+			background-color 0.2s,
+			color 0.2s;
+	}
+	.menu ul li a:hover {
+		background-color: #c0a080;
+		color: white;
+	}
+
+	/* --- CAMBIO 4: El contenido principal se adapta al estado del menú --- */
+	.contenido-admin {
+		/* Por defecto, no tiene margen izquierdo */
+		margin-left: 0;
+		margin-top: 60px;
+		padding: 2rem 3rem;
 		color: white;
 		min-height: calc(100vh - 60px);
-		max-width: 1100px;
-		margin-inline: auto;
+		transition: margin-left 0.3s ease-in-out; /* Animación suave */
 	}
 
-	/* TITULO PRINCIPAL CENTRADO */
-	.titulo-principal {
-		margin-bottom: 2rem;
+	/* --- CAMBIO 5: ¡LA MAGIA! Al abrir el menú, se empuja el contenido --- */
+	.menu-toggle:checked ~ .contenido-admin {
+		margin-left: 250px; /* Ancho del menú */
+	}
+
+	/* ---- Estilos del Contenido y Tarjetas (se mantienen) ---- */
+	.dashboard-header {
 		text-align: center;
-		font-size: 2rem;
+		margin-bottom: 3rem;
+	}
+	.titulo-principal {
+		font-size: 2.5rem;
+		font-weight: 700;
 		color: #c0a080;
+		margin-bottom: 0.5rem;
+	}
+	.subtitulo {
+		font-size: 1.1rem;
+		color: #a0a0a0;
+		margin-top: 0;
 	}
 
-	/* GRID RESPONSIVO PARA LAS CARDS */
 	.grid-cards {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 		gap: 2rem;
 	}
 
-	/* ESTILO DE CADA CARD */
 	.card {
-		background-color: #2f2f2f;
-		border-radius: 16px;
-		padding: 1.5rem;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		background: linear-gradient(145deg, #2e2e2e, #252525);
+		border-radius: 12px;
+		padding: 2rem 1.5rem;
+		border: 1px solid #404040;
+		box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+		transition:
+			transform 0.3s ease,
+			box-shadow 0.3s ease;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 1.2rem;
-		transition: transform 0.2s ease;
+		text-align: center;
 	}
-
 	.card:hover {
-		transform: scale(1.03);
+		transform: translateY(-8px);
+		box-shadow: 0 10px 20px rgba(192, 160, 128, 0.2);
 	}
 
-	/* ICONO DE LA CARD */
 	.card img {
 		width: 60px;
 		height: 60px;
 		object-fit: contain;
+		margin-bottom: 1.5rem;
 	}
-
-	/* TEXTO DE LA CARD */
+	.card-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
 	.card h3 {
 		margin: 0;
-		font-size: 1.1rem;
-		color: #c0a080;
+		font-size: 1rem;
+		font-weight: 500;
+		color: #b0b0b0;
+	}
+	.card p {
+		margin: 0.2rem 0 0;
+		font-size: 2.8rem;
+		font-weight: bold;
+		color: #ffffff;
+		line-height: 1.2;
 	}
 
-	.card p {
-		margin: 0;
-		font-size: 1.6rem;
-		font-weight: bold;
-		color: white;
+	.contenedor-carga {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 50vh;
+	}
+	.mensaje-carga {
+		font-size: 1.5rem;
+		color: #c0a080;
+		animation: pulse 1.8s infinite ease-in-out;
+	}
+	@keyframes pulse {
+		0% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.6;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	/* --- CAMBIO 6: Media Query se simplifica. Define el comportamiento en móviles si queremos que sea diferente --- */
+	/* Por ejemplo, en pantallas muy pequeñas, podríamos querer que el menú se superponga en vez de empujar */
+	@media (max-width: 600px) {
+		.contenido-admin {
+			padding: 2rem 1.5rem; /* Menos padding en pantallas pequeñas */
+		}
+		/* Si quisiéramos que se superponga: */
+		/* .menu-toggle:checked ~ .contenido-admin { margin-left: 0; } */
 	}
 </style>
