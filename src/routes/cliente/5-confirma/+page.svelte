@@ -67,7 +67,7 @@
 		<div class="logo">
 			<a href="/cliente/panel">
 				<!-- Hacemos el logo un enlace al panel -->
-				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+				<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 			</a>
 		</div>
 	</nav>

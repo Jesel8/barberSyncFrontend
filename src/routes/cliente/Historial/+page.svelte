@@ -5,8 +5,9 @@
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation'; // ✅ Navegación a página de reseña
 	import { authStore } from '$lib/stores/authStore.js';
-	import '$lib/Styles/Global.css';
-	import '$lib/Styles/nav.css';
+	// Nota: Has importado Global.css y nav.css dos veces, Svelte lo manejará, pero puedes borrar las duplicadas.
+	// import '$lib/Styles/Global.css';
+	// import '$lib/Styles/nav.css';
 
 	let citasPendientes = [];
 	let citasPasadas = [];
@@ -47,7 +48,6 @@
 		}
 	});
 
-	// ✅ Reemplazo del modal por navegación
 	function irAResena(idCita) {
 		goto(`/cliente/resena/${idCita}`);
 	}
@@ -66,13 +66,25 @@
 	}
 </script>
 
-				<nav class="top">
-		<div class="logo">
-			<a href="/cliente/panel">
-				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
-			</a>
-		</div>
-	</nav>
+<!-- === NAVBAR ESTÁNDAR PARA USUARIO LOGUEADO (CORREGIDA) === -->
+<nav class="top">
+	<label for="menu-toggle" class="menu-icon">
+		<!-- ✅ CORREGIDO: Ruta de icono estándar -->
+		<img src="/assets/icons/Menu.svg" alt="Menu Icon" />
+	</label>
+	<div class="logo">
+		<!-- ✅ CORREGIDO: Ruta de imagen estándar y enlace al panel -->
+		<a href="/cliente/1-panel">
+			<img src="\src\static\assets\images\logo blanco.png" alt="Logo BarberSync" />
+		</a>
+	</div>
+	<div class="salir">
+		<!-- ✅ AÑADIDO: Botón para cerrar sesión -->
+		<a href="/cliente/1-panel" title="Cerrar Sesión">
+			<img src="/assets/icons/return.svg" alt="Cerrar Sesión" />
+		</a>
+	</div>
+</nav>
 
 <h1 class="titulo-panel">Historial de Citas</h1>
 
@@ -131,17 +143,65 @@
 {/if}
 
 <style>
-		.titulo-panel {
+	/* --- ESTILOS DE NAVBAR (Añadidos para consistencia) --- */
+	/* NOTA: Estos estilos ya deberían estar en tu archivo nav.css,
+	   pero los incluyo aquí para asegurar que se vean correctamente. */
+	nav.top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 2rem;
+		background-color: #1f1f1f;
+		border-bottom: 1px solid #444;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		color: white; /* Añadido para herencia */
+	}
+
+	.logo img {
+		height: 50px;
+		vertical-align: middle;
+	}
+
+	.menu-icon,
+	.salir {
+		display: flex;
+		align-items: center;
+	}
+
+	.menu-icon img,
+	.salir img {
+		height: 24px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+	.menu-icon:hover img,
+	.salir a:hover img {
+		opacity: 0.8;
+	}
+
+	/* Ocultar el icono de menú en pantallas grandes si es solo para móvil */
+	@media (min-width: 768px) {
+		.menu-icon {
+			display: none;
+		}
+	}
+	/* --- FIN DE ESTILOS DE NAVBAR --- */
+
+	.titulo-panel {
 		text-align: center;
 		font-size: 2.5rem;
-		margin-top: 4rem;
-		margin-bottom: 1rem;
+		margin-top: 2rem; /* Reducido para mejor espacio con la navbar */
+		margin-bottom: 2rem;
 		font-weight: bold;
+		color: #e0e0e0;
 	}
 	.contenedor-historial {
 		max-width: 900px;
 		margin: auto;
-		padding: 2rem;
+		padding: 0 2rem 2rem 2rem; /* Ajustado el padding superior */
 		color: white;
 		display: flex;
 		flex-direction: column;
@@ -154,33 +214,54 @@
 		box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 	}
 	.titulo-seccion {
-		margin-bottom: 1rem;
+		margin-top: 0; /* Asegurar que no haya margen extra */
+		margin-bottom: 1.5rem;
 		color: #c0a080;
+		border-bottom: 1px solid #444;
+		padding-bottom: 0.75rem;
 	}
 	.card-cita {
 		background-color: #3a3a3a;
 		border-left: 6px solid #c0a080;
-		padding: 1rem;
+		padding: 1.25rem;
 		margin-bottom: 1rem;
 		border-radius: 10px;
 	}
 	.card-cita.realizada {
-		border-left: 6px solid #888;
+		border-left-color: #888;
 		opacity: 0.8;
+	}
+	.card-cita.cancelada {
+		border-left-color: #dc3545;
+		opacity: 0.7;
 	}
 	.card-cita h3 {
 		margin: 0 0 0.5rem;
 		color: #c0a080;
 	}
-	.estado.realizada {
+	.card-cita p {
+		margin: 0.5rem 0;
+	}
+	.estado {
+		font-weight: bold;
+	}
+	.estado.confirmada {
 		color: #28a745;
+	}
+	.estado.pendiente {
+		color: #ffc107;
+	}
+	.estado.realizada {
+		color: #6c757d;
 	}
 	.estado.cancelada {
 		color: #dc3545;
 	}
+
 	.btn-resena {
-		background-color: #007bff;
-		color: white;
+		background-color: #c0a080;
+		color: #111;
+		font-weight: bold;
 		border: none;
 		padding: 8px 12px;
 		border-radius: 5px;
@@ -189,11 +270,12 @@
 		transition: background-color 0.3s;
 	}
 	.btn-resena:hover {
-		background-color: #0056b3;
+		background-color: #d4b090;
 	}
 	.resena-enviada {
 		margin-top: 10px;
 		font-style: italic;
 		color: #28a745;
+		font-weight: bold;
 	}
 </style>

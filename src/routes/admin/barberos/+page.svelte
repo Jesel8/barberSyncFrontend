@@ -183,14 +183,14 @@
 <!-- === NAVBAR AÑADIDA === -->
 <nav class="top">
 	<label for="menu-toggle" class="menu-icon">
-		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+		<img src="/assets/icons/Menu.svg" alt="Menu Icon" />
 	</label>
 	<div class="logo">
-		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+		<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 	</div>
 	<div class="salir">
 		<a href="/admin/1-paneladmin" title="Cerrar Sesión">
-			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+			<img src="/assets/icons/return.svg" alt="Cerrar Sesión" />
 		</a>
 	</div>
 </nav>
@@ -259,21 +259,41 @@
 			<div class="modal-contenido">
 				<h2 class="modal-titulo">Nuevo Barbero</h2>
 				<form class="modal-formulario" on:submit|preventDefault={crearNuevoBarbero}>
-					<input bind:value={nuevoBarbero.primerNombre} placeholder="Primer Nombre" required />
-					<input bind:value={nuevoBarbero.segundoNombre} placeholder="Segundo Nombre" />
-					<input bind:value={nuevoBarbero.primerApellido} placeholder="Primer Apellido" required />
-					<input bind:value={nuevoBarbero.segundoApellido} placeholder="Segundo Apellido" />
+					<input
+						bind:value={nuevoBarbero.primerNombre}
+						placeholder="Primer Nombre"
+						required
+						autocomplete="given-name"
+					/>
+					<input
+						bind:value={nuevoBarbero.segundoNombre}
+						placeholder="Segundo Nombre"
+						autocomplete="additional-name"
+					/>
+					<input
+						bind:value={nuevoBarbero.primerApellido}
+						placeholder="Primer Apellido"
+						required
+						autocomplete="family-name"
+					/>
+					<input
+						bind:value={nuevoBarbero.segundoApellido}
+						placeholder="Segundo Apellido"
+						autocomplete="family-name"
+					/>
 					<input
 						bind:value={nuevoBarbero.correo}
 						placeholder="Correo Electrónico"
 						type="email"
 						required
+						autocomplete="email"
 					/>
 					<input
 						bind:value={nuevoBarbero.contrasena}
 						placeholder="Contraseña"
 						type="password"
 						required
+						autocomplete="new-password"
 					/>
 					<div class="modal-acciones">
 						<button

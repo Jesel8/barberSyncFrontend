@@ -42,21 +42,21 @@
 
 <nav class="top">
 	<label for="menu-toggle" class="menu-icon">
-		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+		<img src="/assets/icons/Menu.svg" alt="Menu Icon" />
 	</label>
 	<div class="logo">
-		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+		<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 	</div>
 	<div class="salir">
 		<a href="/" title="Cerrar Sesión">
-			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+			<img src="/assets/icons/Salir.svg" alt="Cerrar Sesión" />
 		</a>
 	</div>
 </nav>
 
 <div class="menu">
 	<div class="fotoadmin">
-		<img src="/src/static/assets/icons/userfoto.svg" alt="Foto admin" />
+		<img src="/assets/icons/userfoto.svg" alt="Foto admin" />
 		<p class="nombre-usuario">
 			{#if usuario}
 				{usuario.nombreCompleto}
@@ -91,7 +91,7 @@
 		<section class="grid-cards">
 			<div class="card">
 				<img
-					src="/src/static/assets/icons/Barbers.svg"
+					src="/assets/icons/Barbers.svg"
 					alt="Icono de Barberos"
 				/>
 				<div class="card-content">
@@ -101,7 +101,7 @@
 			</div>
 			<div class="card">
 				<img
-					src="/src/static/assets/icons/Services.svg"
+					src="/assets/icons/Services.svg"
 					alt="Icono de Servicios"
 				/>
 				<div class="card-content">
@@ -110,7 +110,7 @@
 				</div>
 			</div>
 			<div class="card">
-				<img src="/src/static/assets/icons/Citas.svg" alt="Icono de Citas" />
+				<img src="/assets/icons/Citas.svg" alt="Icono de Citas" />
 				<div class="card-content">
 					<h3>Citas Totales</h3>
 					<p>{totalCitas}</p>
@@ -118,7 +118,7 @@
 			</div>
 			<div class="card">
 				<img
-					src="/src/static/assets/icons/Opinion.svg"
+					src="/assets/icons/Opinion.svg"
 					alt="Icono de Opiniones"
 				/>
 				<div class="card-content">

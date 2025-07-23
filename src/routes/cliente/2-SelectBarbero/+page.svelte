@@ -60,9 +60,9 @@
 <main class="contenedor-principal">
 	<nav class="top">
 		<div class="logo">
-			<a href="/cliente/panel">
+			<a href="/cliente/1-panel">
 				<!-- Hacemos el logo un enlace al panel -->
-				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+				<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 			</a>
 		</div>
 	</nav>
@@ -132,6 +132,8 @@
 		font-size: 1.1rem;
 	}
 	.grid-barberos {
+		margin-right: 40px;
+		margin-left: 40px;
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 		gap: 2rem;

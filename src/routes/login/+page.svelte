@@ -55,12 +55,26 @@
 	}
 </script>
 
+<!-- NAVBAR DE RETORNO (Sin cambios) -->
+<nav class="top-nav-simple">
+	<div class="logo">
+		<a href="/">
+			<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
+		</a>
+	</div>
+	<div class="return-action">
+		<a href="/" title="Volver al inicio">
+			<img src="/assets/icons/return.svg" alt="Volver" />
+			<span>Volver al Inicio</span>
+		</a>
+	</div>
+</nav>
 <!-- Contenedor principal que centra todo vertical y horizontalmente -->
 <div class="form-container">
 	<div class="form-card">
 		<div class="form-header">
 			<img
-				src="/src/static/assets/images/logo blanco.png"
+				src="/assets/images/logo blanco.png"
 				alt="Logo BarberSync"
 				class="logo-form"
 			/>
@@ -71,7 +85,7 @@
 			<!-- Grupo de Correo -->
 			<div class="input-group">
 				<label for="correo">Correo Electrónico</label>
-				<img src="/src/static/assets/icons/mail.svg" alt="" class="icon" />
+				<img src="/assets/icons/mail.svg" alt="" class="icon" />
 				<input
 					type="email"
 					id="correo"
@@ -84,7 +98,7 @@
 			<!-- Grupo de Contraseña -->
 			<div class="input-group">
 				<label for="contrasena">Contraseña</label>
-				<img src="/src/static/assets/icons/lock.svg" alt="" class="icon" />
+				<img src="/assets/icons/lock.svg" alt="" class="icon" />
 				<input
 					type="password"
 					id="contrasena"
@@ -258,5 +272,42 @@
 	}
 	.link-registro a:hover {
 		text-decoration: underline;
+	}
+	.top-nav-simple {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 2rem;
+		background-color: var(--color-superficie);
+		border-bottom: 1px solid var(--color-borde);
+	}
+
+	.top-nav-simple .logo img {
+		height: 50px;
+		vertical-align: middle;
+	}
+	.return-action a {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		text-decoration: none;
+		color: var(--color-texto-principal);
+		font-weight: bold;
+		padding: 0.5rem 1rem;
+		border: 1px solid var(--color-borde);
+		border-radius: 8px;
+		transition:
+			background-color 0.2s,
+			border-color 0.2s;
+	}
+
+	.return-action a:hover {
+		background-color: #333;
+		border-color: var(--color-primario);
+	}
+
+	.return-action img {
+		height: 20px;
+		filter: invert(90%);
 	}
 </style>

@@ -64,7 +64,7 @@
 		<div class="logo">
 			<a href="/cliente/panel">
 				<!-- Hacemos el logo un enlace al panel -->
-				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+				<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 			</a>
 		</div>
 	</nav>
@@ -154,10 +154,13 @@
 		margin-bottom: 2rem;
 	}
 	.lista-servicios {
+		margin-right: 80px;
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		margin-top: 2rem;
 		margin-bottom: 2rem;
+		margin-left: 80px;
 	}
 	.card-servicio {
 		display: flex;
@@ -219,6 +222,7 @@
 		font-weight: bold;
 		font-size: 1.1rem;
 		transition: all 0.2s;
+		max-width: 200px;
 	}
 	.boton-continuar:disabled {
 		background-color: #555;

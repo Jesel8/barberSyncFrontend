@@ -1,33 +1,37 @@
 <script>
+	// Estos imports de CSS están perfectos para cargar los estilos.
 	import '$lib/styles/Global.css';
 	import '$lib/styles/top.css';
 	import '$lib/styles/landing.css';
 </script>
 
+<!-- NAVBAR PÚBLICA (CON RUTAS CORREGIDAS) -->
 <nav class="top">
 	<div class="logo">
-		<img src="\src\static\assets\images\logo blanco.png" alt="Logo BarberSync" />
+		<!-- ✅ CORREGIDO: Rutas de imágenes con diagonales -->
+		<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 	</div>
 	<div class="links">
-		<a href="\login" class="sesion">Iniciar Sesión</a>
+		<a href="/login" class="sesion">Iniciar Sesión</a>
 		<a href="/login/Registrarse" class="registrarse">Registrarse</a>
 	</div>
 </nav>
 
-<!-- HERO MEJORADO -->
+<!-- HERO MEJORADO (CON RUTAS CORREGIDAS) -->
 <section class="hero-mejorado">
 	<div class="overlay"></div>
 	<div class="hero-content">
 		<div class="hero-logo">
-			<img src="\src\static\assets\images\barber.png" alt="Logo" />
+			<!-- ✅ CORREGIDO: Rutas de imágenes con diagonales -->
+			<img src="/assets/images/barber.png" alt="Logo" />
 		</div>
 		<h1 class="hero-titulo">Constantino's Barbershop</h1>
 		<p class="hero-subtitulo">Autenticidad, precisión y estilo en cada corte</p>
-		<a href="/Login" class="btn-hero">Agenda tu cita</a>
+		<a href="/login" class="btn-hero">Agenda tu cita</a>
 	</div>
 </section>
 
-<!-- SERVICIOS EN CARRUSEL -->
+<!-- SERVICIOS EN CARRUSEL (CON RUTAS CORREGIDAS) -->
 <section class="servicios-profesionales py-5" id="servicios">
 	<div class="container text-center">
 		<h2 class="servicios-titulo mb-3">Nuestros Servicios</h2>
@@ -39,36 +43,23 @@
 			<div class="carousel-inner">
 				<div class="carousel-item active">
 					<div class="d-flex justify-content-center flex-wrap gap-4">
+						<!-- ✅ CORREGIDO: Rutas de imágenes con diagonales -->
 						<div class="card servicio-card">
-							<img
-								src="\src\static\assets\images\corte.png"
-								class="card-img-top"
-								alt="Corte Clásico"
-							/>
+							<img src="/assets/images/corte.png" class="card-img-top" alt="Corte Clásico" />
 							<div class="card-body text-center">
 								<h5 class="card-title">Corte de Cabello</h5>
 								<p class="card-text">Estilo limpio y tradicional. $100 MXN</p>
 							</div>
 						</div>
-
 						<div class="card servicio-card">
-							<img
-								src="\src\static\assets\images\barba.png"
-								class="card-img-top"
-								alt="Afeitado Tradicional"
-							/>
+							<img src="/assets/images/barba.png" class="card-img-top" alt="Afeitado Tradicional" />
 							<div class="card-body text-center">
 								<h5 class="card-title">Corte de Barba</h5>
 								<p class="card-text">Navaja caliente, espuma especial. $120 MXN</p>
 							</div>
 						</div>
-
 						<div class="card servicio-card">
-							<img
-								src="\src\static\assets\images\cabar.png"
-								class="card-img-top"
-								alt="Diseño de Barba"
-							/>
+							<img src="/assets/images/cabar.png" class="card-img-top" alt="Diseño de Barba" />
 							<div class="card-body text-center">
 								<h5 class="card-title">Arreglo de Cabello y Barba</h5>
 								<p class="card-text">
@@ -78,39 +69,25 @@
 						</div>
 					</div>
 				</div>
-
 				<div class="carousel-item">
 					<div class="d-flex justify-content-center flex-wrap gap-4">
+						<!-- ✅ CORREGIDO: Rutas de imágenes con diagonales -->
 						<div class="card servicio-card">
-							<img
-								src="\src\static\assets\images\navaja.png"
-								class="card-img-top"
-								alt="Fade Americano"
-							/>
+							<img src="/assets/images/navaja.png" class="card-img-top" alt="Fade Americano" />
 							<div class="card-body text-center">
 								<h5 class="card-title">Afeitado de Barba</h5>
 								<p class="card-text">Degradado moderno. $100 MXN</p>
 							</div>
 						</div>
-
 						<div class="card servicio-card">
-							<img
-								src="\src\static\assets\images\grecas.png"
-								class="card-img-top"
-								alt="Limpieza Facial"
-							/>
+							<img src="/assets/images/grecas.png" class="card-img-top" alt="Limpieza Facial" />
 							<div class="card-body text-center">
 								<h5 class="card-title">Grecas/Dibujos</h5>
 								<p class="card-text">Simetria y modernedidad. $120 MXN</p>
 							</div>
 						</div>
-
 						<div class="card servicio-card">
-							<img
-								src="\src\static\assets\images\cejas.png"
-								class="card-img-top"
-								alt="Corte para Niño"
-							/>
+							<img src="/assets/images/cejas.png" class="card-img-top" alt="Corte para Niño" />
 							<div class="card-body text-center">
 								<h5 class="card-title">Arreglo de Cejas</h5>
 								<p class="card-text">Paciencia y estilo. $50 MXN</p>
@@ -119,7 +96,6 @@
 					</div>
 				</div>
 			</div>
-
 			<button
 				class="carousel-control-prev"
 				type="button"
@@ -168,16 +144,17 @@
 	</div>
 </section>
 
-<!-- FOOTER OSCURO -->
+<!-- FOOTER OSCURO (CON RUTA CORREGIDA) -->
 <footer class="footer">
 	<div class="footer-left">
-		<p><strong>Barbería El Clásico</strong></p>
+		<p><strong>Constantino's Barbershop</strong></p>
 		<p>Tu corte, tu estilo, tu momento.</p>
 		<p>© 2025 Todos los derechos reservados</p>
 	</div>
 	<div class="footer-right">
 		<p class="powered">Con tecnología de</p>
-		<img src="\src\static\assets\images\logo blanco.png" alt="BarberSync" />
+		<!-- ✅ CORREGIDO: Rutas de imágenes con diagonales -->
+		<img src="/assets/images/logo blanco.png" alt="BarberSync" />
 		<p><a href="/" target="_blank">www.barbersync.mx</a></p>
 	</div>
 </footer>

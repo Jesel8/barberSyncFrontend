@@ -40,7 +40,7 @@
 			<div class="navbar-usuario">
 				<span class="usuario-nombre">Bienvenido, {usuario.nombre}</span>
 				<button class="boton-logout" on:click={cerrarSesion}>
-					<img src="/icons/Salir.svg" alt="Salir" />
+					<img src="/assets/icons/Salir.svg" alt="Salir" />
 					Cerrar Sesión
 				</button>
 			</div>
@@ -50,7 +50,7 @@
 		<section class="opciones-grid">
 			<a href="/barbero/ver-citas" class="card-opcion">
 				<div class="card-icono">
-					<img src="/icons/calendarone.svg" alt="Citas" />
+					<img src="/assets/icons/calendarone.svg" alt="Citas" />
 				</div>
 				<h3>Ver Citas</h3>
 				<p>Consulta tus citas agendadas con clientes.</p>
@@ -58,7 +58,7 @@
 
 			<a href="/barbero/resenas" class="card-opcion">
 				<div class="card-icono">
-					<img src="/icons/review.svg" alt="Reseñas" />
+					<img src="/assets/icons/review.svg" alt="Reseñas" />
 				</div>
 				<h3>Ver Reseñas</h3>
 				<p>Revisa las opiniones que han dejado los clientes.</p>
@@ -67,7 +67,7 @@
 			<!-- === TARJETA MODIFICADA: EDITAR PERFIL === -->
 			<a href="/barbero/perfil" class="card-opcion">
 				<div class="card-icono">
-					<img src="/icons/user-edit.svg" alt="Editar Perfil" />
+					<img src="/assets/icons/user.svg" alt="Editar Perfil" />
 				</div>
 				<h3>Editar Perfil</h3>
 				<p>Actualiza tu información personal y contraseña.</p>
@@ -83,10 +83,10 @@
 	<div class="estado-verificacion">
 		<p>Verificando autorización...</p>
 	</div>
-{/if}
+{/if}```
 
 <style>
-	/* --- VARIABLES DE DISEÑO --- */
+	/* --- VARIABLES DE DISEÑO (Sin cambios) --- */
 	:root {
 		--color-primario: #c0a080;
 		--color-fondo: #1e1e1e;
@@ -100,7 +100,7 @@
 		--radio-borde: 12px;
 	}
 
-	/* --- LAYOUT PRINCIPAL DEL PANEL --- */
+	/* --- LAYOUT PRINCIPAL DEL PANEL (Sin cambios) --- */
 	.panel-layout {
 		display: flex;
 		flex-direction: column;
@@ -110,7 +110,7 @@
 		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	}
 
-	/* --- NAVBAR SUPERIOR --- */
+	/* --- NAVBAR (Sin cambios) --- */
 	.navbar {
 		display: flex;
 		justify-content: space-between;
@@ -123,22 +123,18 @@
 		top: 0;
 		z-index: 10;
 	}
-
 	.navbar-logo img {
 		height: 50px;
 	}
-
 	.navbar-usuario {
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
 	}
-
 	.usuario-nombre {
 		font-weight: 500;
 		color: var(--color-texto-secundario);
 	}
-
 	.boton-logout {
 		display: flex;
 		align-items: center;
@@ -152,34 +148,32 @@
 		font-weight: 600;
 		transition: all 0.2s ease;
 	}
-
 	.boton-logout img {
 		width: 18px;
 		filter: invert(70%);
 		transition: filter 0.2s ease;
 	}
-
 	.boton-logout:hover {
 		background-color: var(--color-primario);
 		color: var(--color-fondo);
 		border-color: var(--color-primario);
 	}
-
 	.boton-logout:hover img {
 		filter: invert(0%);
 	}
 
-	/* --- GRID DE OPCIONES --- */
+	/* --- GRID DE OPCIONES (CAMBIO PRINCIPAL) --- */
 	.opciones-grid {
+		/* SE ELIMINÓ margin-bottom: 200px; */
 		display: flex;
 		justify-content: center;
 		gap: 2.5rem;
-		padding: 4rem 2rem;
+		padding: 3rem 2rem; /* Se puede reducir un poco el padding si se desea */
 		flex-wrap: wrap;
-		background-color: #222; /* Un tono ligeramente diferente para el fondo del grid */
+		background-color: #222;
 	}
 
-	/* --- TARJETAS DE OPCIÓN --- */
+	/* --- TARJETAS DE OPCIÓN (Sin cambios) --- */
 	.card-opcion {
 		text-decoration: none;
 		background-color: var(--color-superficie);
@@ -199,13 +193,11 @@
 			box-shadow 0.3s ease,
 			border-color 0.3s ease;
 	}
-
 	.card-opcion:hover {
 		transform: translateY(-8px);
 		box-shadow: var(--sombra-profunda);
 		border-color: var(--color-primario);
 	}
-
 	.card-icono {
 		background-color: var(--color-superficie-clara);
 		border-radius: 50%;
@@ -217,29 +209,24 @@
 		margin-bottom: 1rem;
 		transition: background-color 0.3s ease;
 	}
-
 	.card-opcion:hover .card-icono {
 		background-color: var(--color-primario);
 	}
-
 	.card-opcion img {
 		width: 40px;
 		height: 40px;
 		filter: invert(90%);
 		transition: filter 0.3s ease;
 	}
-
 	.card-opcion:hover img {
 		filter: invert(10%);
 	}
-
 	.card-opcion h3 {
 		font-size: 1.5rem;
 		margin: 0.5rem 0;
 		color: var(--color-primario);
 		font-weight: 600;
 	}
-
 	.card-opcion p {
 		font-size: 0.95rem;
 		color: var(--color-texto-secundario);
@@ -247,11 +234,24 @@
 		margin: 0;
 	}
 
-	/* --- CONTENEDOR DEL SLOT Y ESTADO DE VERIFICACIÓN --- */
+	/* --- CONTENEDOR DEL SLOT (CAMBIO IMPORTANTE) --- */
 	.contenido-slot {
 		padding: 2rem;
+		flex: 1; /* <-- ¡ESTA LÍNEA HACE LA MAGIA! */
+		/* Hace que este elemento crezca para ocupar el espacio disponible */
 	}
 
+	/* --- NUEVO FOOTER --- */
+	.panel-footer {
+		padding: 1.5rem 2rem;
+		background-color: var(--color-superficie);
+		text-align: center;
+		border-top: 1px solid var(--color-borde);
+		color: var(--color-texto-secundario);
+		font-size: 0.9rem;
+	}
+
+	/* --- ESTADO DE VERIFICACIÓN (Sin cambios) --- */
 	.estado-verificacion {
 		display: flex;
 		justify-content: center;

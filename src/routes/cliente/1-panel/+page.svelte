@@ -13,12 +13,12 @@
 	<div class="logo">
 		<a href="/cliente/panel">
 			<!-- Hacemos el logo un enlace al panel -->
-			<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+			<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 		</a>
 	</div>
 	<div class="nav-actions">
 		<a href="/" class="logout-button" title="Cerrar Sesión">
-			<img src="/src/static/assets/icons/Salir.svg" alt="Salir" />
+			<img src="/assets/icons/Salir.svg" alt="Salir" />
 			<span>Salir</span>
 		</a>
 	</div>
@@ -39,7 +39,7 @@
 	<section class="panel-usuario">
 		<a href="/cliente/2-SelectBarbero" class="card-opcion">
 			<div class="card-icon-background">
-				<img src="/src/static/assets/icons/calendartwo.svg" alt="Agendar" />
+				<img src="/assets/icons/calendartwo.svg" alt="Agendar" />
 			</div>
 			<h3>Agendar Cita</h3>
 			<p>Explora servicios y reserva tu próximo corte.</p>
@@ -47,23 +47,10 @@
 
 		<a href="/cliente/Historial" class="card-opcion">
 			<div class="card-icon-background">
-				<img src="/src/static/assets/icons/calendarone.svg" alt="Historial" />
+				<img src="/assets/icons/calendarone.svg" alt="Historial" />
 			</div>
 			<h3>Mis Citas</h3>
 			<p>Consulta el historial y los detalles de tus citas.</p>
-		</a>
-
-		<!-- 
-            NUEVA TARJETA RECOMENDADA 
-            Esta opción es muy útil y reemplaza a "Salir".
-        -->
-		<a href="/info/contacto" class="card-opcion">
-			<div class="card-icon-background">
-				<!-- Se recomienda un icono de mapa o teléfono -->
-			<img src="/src/static/assets/icons/phone-call.svg" alt="ayuda" />
-			</div>
-			<h3>Ubicación y Contacto</h3>
-			<p>Encuentra nuestras sucursales y contáctanos.</p>
 		</a>
 	</section>
 </main>

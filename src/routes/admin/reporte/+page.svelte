@@ -103,14 +103,14 @@
 <!-- === NAVBAR AÑADIDA === -->
 <nav class="top">
 	<label for="menu-toggle" class="menu-icon">
-		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+		<img src="/assets/icons/Menu.svg" alt="Menu Icon" />
 	</label>
 	<div class="logo">
-		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+		<img src="/assets/images/logo blanco.png" alt="Logo BarberSync" />
 	</div>
 	<div class="salir">
 		<a href="/admin/1-paneladmin" title="Cerrar Sesión">
-			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+			<img src="/assets/icons/Salir.svg" alt="Cerrar Sesión" />
 		</a>
 	</div>
 </nav>

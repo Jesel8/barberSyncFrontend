@@ -1,7 +1,7 @@
 import { apiFetch } from './fetcher';
 
 // URLs base claras y con un único propósito
-const USUARIOS_URL = 'http://localhost:8080/api/usuarios';
+const USUARIOS_URL = 'http://:8080/api/usuarios';
 const BARBEROS_URL = 'http://localhost:8080/api/barberos';
 
 /**
