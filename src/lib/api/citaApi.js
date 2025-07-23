@@ -1,5 +1,5 @@
 export async function agendarCita(request) {
-  const response = await fetch('http://localhost:8080/api/citas', {
+  const response = await fetch('http://54.197.147.238:8080/api/citas', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request)
@@ -12,7 +12,7 @@ export async function agendarCita(request) {
   return await response.json();
 }
 export async function obtenerCitasPorCliente(idCliente) {
-  const response = await fetch(`http://localhost:8080/api/citas/cliente/${idCliente}`);
+  const response = await fetch(`http://54.197.147.238:8080/api/citas/cliente/${idCliente}`);
   if (!response.ok) throw new Error('No se pudieron cargar las citas');
   return await response.json();
 }

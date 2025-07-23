@@ -1,6 +1,6 @@
 // src/lib/api/resenas.js
 import { apiFetch } from './fetcher';
-const BASE_URL = 'http://localhost:8080/api/resenas';
+const BASE_URL = 'http://54.197.147.238:8080/api/resenas';
 
 /**
  * [ADMIN] Obtiene todas las reseñas del sistema.

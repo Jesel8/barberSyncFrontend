@@ -24,7 +24,7 @@
 		}
 
 		try {
-			const response = await fetch(`http://localhost:8080/api/citas/cliente/${usuario.idUsuario}`, {
+			const response = await fetch(`http://54.197.147.238:8080/api/citas/cliente/${usuario.idUsuario}`, {
 				headers: {
 					Authorization: `Bearer ${usuario.token}`
 				}

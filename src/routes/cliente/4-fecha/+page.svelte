@@ -42,7 +42,7 @@
 			const fechaFormateada = `${fechaParaAPI.getFullYear()}-${String(fechaParaAPI.getMonth() + 1).padStart(2, '0')}-${String(fechaParaAPI.getDate()).padStart(2, '0')}`;
 
 			// 2. Construimos la URL con los parámetros, como funcionaba antes
-			const BASE_URL = 'http://localhost:8080/api';
+			const BASE_URL = 'http://54.197.147.238:8080/api';
 			const params = new URLSearchParams({ fecha: fechaFormateada });
 			idsDeServicios.forEach((id) => params.append('idServicios', id));
 			const url = `${BASE_URL}/disponibilidad/barbero/${idBarbero}?${params.toString()}`;

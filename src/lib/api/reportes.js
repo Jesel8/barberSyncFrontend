@@ -1,7 +1,7 @@
 import { authStore } from '$lib/stores/authStore.js';
 import { get } from 'svelte/store';
 
-const BASE_URL = 'http://localhost:8080/api'; // Asegúrate que esta sea la URL base de tu API
+const BASE_URL = 'http://54.197.147.238:8080/api'; // Asegúrate que esta sea la URL base de tu API
 
 // --- FUNCIÓN CORREGIDA ---
 // Ahora busca el token en la ubicación correcta: auth.usuario.token

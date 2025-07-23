@@ -1,6 +1,6 @@
 // src/lib/api/servicios.js
 
-const API_URL = 'http://localhost:8080/api/servicios';
+const API_URL = 'http://54.197.147.238:8080/api/servicios';
 
 // --- Función Helper para obtener el Token ---
 function getToken() {

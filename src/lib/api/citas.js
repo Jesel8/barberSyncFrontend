@@ -2,7 +2,7 @@
 
 // --- TODO TU CÓDIGO EXISTENTE SE MANTIENE INTACTO ---
 import { apiFetch } from './fetcher';
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = 'http://54.197.147.238:8080/api';
 
 // --- Helper para formatear fechas ---
 function formatDateForAPI(date) {

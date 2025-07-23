@@ -2,7 +2,7 @@
 
 import { apiFetch } from './fetcher';
 
-const BASE_URL = 'http://localhost:8080/api/usuarios';
+const BASE_URL = 'http://54.197.147.238:8080/api/usuarios';
 
 /**
  * Obtiene los datos de un perfil de usuario por su ID.

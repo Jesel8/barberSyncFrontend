@@ -23,7 +23,7 @@
 	onMount(async () => {
 		// Opcional: Cargar los datos de la cita para mostrarlos en la página
 		try {
-			const response = await fetch(`http://localhost:8080/api/citas/${idCita}`, {
+			const response = await fetch(`http://54.197.147.238:8080/api/citas/${idCita}`, {
 				headers: { Authorization: `Bearer ${usuario.token}` }
 			});
 			if (!response.ok) throw new Error('No se pudo cargar la información de la cita.');
@@ -51,7 +51,7 @@
 				comentario
 			};
 
-			const response = await fetch('http://localhost:8080/api/resenas', {
+			const response = await fetch('http://54.197.147.238:8080/api/resenas', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

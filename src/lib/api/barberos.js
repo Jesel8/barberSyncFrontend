@@ -1,8 +1,8 @@
 import { apiFetch } from './fetcher';
 
 // URLs base claras y con un único propósito
-const USUARIOS_URL = 'http://:8080/api/usuarios';
-const BARBEROS_URL = 'http://localhost:8080/api/barberos';
+const USUARIOS_URL = 'http://54.197.147.238:8080/api/usuarios';
+const BARBEROS_URL = 'http://54.197.147.238:8080/api/barberos';
 
 /**
  * Obtiene la lista de todos los usuarios con el rol de BARBERO.

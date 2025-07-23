@@ -17,7 +17,7 @@
 export async function registrarCliente(datosCliente) {
 	// Nota: No estamos usando el 'apiFetch' aquí porque el registro
 	// es una acción pública y no requiere un token de autorización.
-	const response = await fetch('http://localhost:8080/api/auth/register/client', {
+	const response = await fetch('http://54.197.147.238:8080/api/auth/register/client', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

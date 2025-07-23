@@ -1,5 +1,5 @@
 import { apiFetch } from './fetcher';
-const ESPECIALIDADES_URL = 'http://localhost:8080/api/especialidades';
+const ESPECIALIDADES_URL = 'http://54.197.147.238:8080/api/especialidades';
 
 /**
  * [ADMIN] Obtiene el catálogo completo de especialidades disponibles.
