@@ -17,11 +17,15 @@
 		precio: null,
 		duracionMinuto: 30
 	};
-	
+
 	let isLoading = true;
 	let isEditing = false;
 	let showModal = false;
 	let error = null;
+
+	// --- ESTADO PARA LA NAVBAR (AÑADIDO) ---
+	let isAuthorized = true; // Asumimos que el usuario está autorizado
+	let usuario = { nombre: 'Admin' }; // Objeto de usuario de ejemplo
 
 	// --- LÓGICA ---
 	onMount(async () => {
@@ -34,8 +38,8 @@
 			isLoading = true;
 			servicios = await getServicios();
 		} catch (e) {
-			console.error("Error al cargar servicios:", e);
-			error = e.message; // El error ahora se mostrará en la UI principal si falla la carga inicial
+			console.error('Error al cargar servicios:', e);
+			error = e.message;
 		} finally {
 			isLoading = false;
 		}
@@ -53,7 +57,7 @@
 		error = null;
 		showModal = true;
 	}
-	
+
 	function closeModal() {
 		showModal = false;
 		resetForm();
@@ -61,7 +65,7 @@
 
 	async function handleSubmit() {
 		try {
-			error = null; // Limpiamos errores anteriores dentro del modal
+			error = null;
 			const payload = {
 				...formServicio,
 				precio: parseFloat(formServicio.precio),
@@ -70,17 +74,15 @@
 
 			if (isEditing) {
 				const servicioActualizado = await updateServicio(payload.id, payload);
-				// Actualización eficiente: solo reemplazamos el item modificado
-				servicios = servicios.map(s => s.id === payload.id ? servicioActualizado : s);
+				servicios = servicios.map((s) => (s.id === payload.id ? servicioActualizado : s));
 			} else {
 				const nuevoServicio = await createServicio(payload);
-				// Actualización eficiente: añadimos el nuevo item sin recargar toda la lista
 				servicios = [...servicios, nuevoServicio];
 			}
 			closeModal();
 		} catch (e) {
-			console.error("Error en el formulario:", e);
-			error = e.message; // El error se mostrará dentro del modal
+			console.error('Error en el formulario:', e);
+			error = e.message;
 		}
 	}
 
@@ -88,11 +90,9 @@
 		if (confirm(`¿Estás seguro de que quieres eliminar el servicio "${nombre}"?`)) {
 			try {
 				await deleteServicio(id);
-				// Actualización eficiente: filtramos el item eliminado
-				servicios = servicios.filter(s => s.id !== id);
+				servicios = servicios.filter((s) => s.id !== id);
 			} catch (e) {
-				console.error("Error al eliminar:", e);
-				// Un alert es simple y efectivo para errores fuera del modal
+				console.error('Error al eliminar:', e);
 				alert(`No se pudo eliminar el servicio: ${e.message}`);
 			}
 		}
@@ -102,18 +102,45 @@
 		formServicio = { id: null, nombre: '', descripcion: '', precio: null, duracionMinuto: 30 };
 		error = null;
 	}
+
+	// --- FUNCIÓN PARA NAVBAR (AÑADIDO) ---
+	function cerrarSesion() {
+		// Aquí iría tu lógica real para cerrar sesión
+		isAuthorized = false;
+		console.log('Cerrando sesión...');
+		// Por ejemplo: window.location.href = '/login';
+	}
 </script>
 
 <!-- --- ESTRUCTURA HTML --- -->
+
+<!-- === NAVBAR AÑADIDA === -->
+<nav class="top">
+	<!-- Este label es para un posible menú lateral que se activa con un checkbox -->
+	<label for="menu-toggle" class="menu-icon">
+		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+	</label>
+
+	<div class="logo">
+		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+	</div>
+
+	<div class="salir">
+		<!-- Este enlace redirige al usuario, cerrando su sesión de forma efectiva -->
+		<a href="/admin/1-paneladmin" title="Cerrar Sesión">
+			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+		</a>
+	</div>
+</nav>
+```
+
 <main>
 	<h1>Gestión de Servicios</h1>
 
 	<div class="acciones-globales">
-		<button class="boton-agregar" on:click={openCreateModal}>
-			+ Agregar Servicio
-		</button>
+		<button class="boton-agregar" on:click={openCreateModal}> + Agregar Servicio </button>
 	</div>
-	
+
 	{#if isLoading}
 		<p>Cargando servicios...</p>
 	{:else if servicios.length === 0 && !error}
@@ -136,18 +163,24 @@
 					<tr>
 						<td>{servicio.nombre}</td>
 						<td>{servicio.descripcion || '-'}</td>
-						<td>{servicio.precio.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td>
+						<td
+							>{servicio.precio.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td
+						>
 						<td>{servicio.duracionMinuto} min</td>
 						<td class="acciones-celda">
-							<button class="btn-accion btn-edit" on:click={() => openEditModal(servicio)}>Editar</button>
-							<button class="btn-accion btn-delete" on:click={() => handleEliminar(servicio.id, servicio.nombre)}>Eliminar</button>
+							<button class="btn-accion btn-edit" on:click={() => openEditModal(servicio)}
+								>Editar</button
+							>
+							<button
+								class="btn-accion btn-delete"
+								on:click={() => handleEliminar(servicio.id, servicio.nombre)}>Eliminar</button
+							>
 						</td>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	{/if}
-
 </main>
 
 <!-- --- MODAL PARA CREAR/EDITAR --- -->
@@ -161,7 +194,7 @@
 					<label for="nombre">Nombre del Servicio</label>
 					<input id="nombre" type="text" bind:value={formServicio.nombre} required />
 				</div>
-				
+
 				<div class="form-group">
 					<label for="descripcion">Descripción (Opcional)</label>
 					<textarea id="descripcion" bind:value={formServicio.descripcion} rows="3"></textarea>
@@ -169,12 +202,26 @@
 
 				<div class="form-group">
 					<label for="precio">Precio ($)</label>
-					<input id="precio" type="number" step="0.01" min="1" bind:value={formServicio.precio} required />
+					<input
+						id="precio"
+						type="number"
+						step="0.01"
+						min="1"
+						bind:value={formServicio.precio}
+						required
+					/>
 				</div>
 
 				<div class="form-group">
 					<label for="duracion">Duración (minutos)</label>
-					<input id="duracion" type="number" min="5" step="5" bind:value={formServicio.duracionMinuto} required />
+					<input
+						id="duracion"
+						type="number"
+						min="5"
+						step="5"
+						bind:value={formServicio.duracionMinuto}
+						required
+					/>
 				</div>
 
 				{#if error}
@@ -190,7 +237,7 @@
 			</form>
 		</div>
 	</div>
-{/if}
+{/if}```
 
 <!-- --- ESTILOS --- -->
 <style>
@@ -199,6 +246,79 @@
 		color: #f0f0f0;
 		font-family: sans-serif;
 	}
+
+	/* --- ESTILOS DE NAVBAR AÑADIDOS --- */
+	nav.top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 2rem;
+		background-color: #1f1f1f;
+		border-bottom: 1px solid #444;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+
+	.logo img {
+		height: 50px;
+		vertical-align: middle; /* Para alinear mejor la imagen */
+	}
+
+	.menu-icon,
+	.salir {
+		display: flex;
+		align-items: center;
+	}
+
+	.menu-icon img,
+	.salir img {
+		height: 24px; /* O el tamaño que prefieras para los iconos */
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+	.menu-icon:hover img,
+	.salir a:hover img {
+		opacity: 0.8;
+	}
+
+	/* Opcional: Escondemos el menú-icon en pantallas grandes si solo es para móvil */
+	@media (min-width: 768px) {
+		.menu-icon {
+			display: none;
+		}
+	}
+	.usuario-nombre {
+		color: #ccc;
+		font-weight: bold;
+	}
+
+	.boton-logout {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background-color: transparent;
+		color: #ff6b6b;
+		border: 1px solid #ff6b6b;
+		padding: 0.5rem 1rem;
+		border-radius: 8px;
+		cursor: pointer;
+		font-weight: bold;
+		transition: all 0.2s ease;
+	}
+	.boton-logout:hover {
+		background-color: #ff6b6b;
+		color: black;
+	}
+	.boton-logout img {
+		height: 18px;
+		filter: invert(50%) sepia(13%) saturate(3207%) hue-rotate(315deg) brightness(95%) contrast(80%); /* Para colorear el SVG si es necesario */
+	}
+	.boton-logout:hover img {
+		filter: invert(0);
+	}
+	/* --- FIN DE ESTILOS DE NAVBAR --- */
 
 	main {
 		max-width: 960px;
@@ -215,12 +335,14 @@
 	}
 
 	.acciones-globales {
+		flex-direction: row;
 		display: flex;
-		justify-content: flex-end;
+		justify-content: center;
 		margin-bottom: 1.5rem;
 	}
 
 	.boton-agregar {
+		width: 200px;
 		background-color: #c0a080;
 		color: black;
 		padding: 0.75rem 1.5rem;
@@ -232,9 +354,9 @@
 		transition: transform 0.2s;
 	}
 	.boton-agregar:hover {
-		transform: scale(1.05);
+		transform: scale(1.15);
 	}
-	
+
 	.boton-gestionar {
 		background-color: #4a4a4a;
 		color: white;
@@ -332,7 +454,7 @@
 		color: #c0a080;
 		text-align: center;
 	}
-	
+
 	.form-group {
 		margin-bottom: 1.25rem;
 	}
@@ -359,14 +481,14 @@
 		outline: none;
 		border-color: #c0a080;
 	}
-	
+
 	.modal-actions {
 		display: flex;
 		justify-content: flex-end;
 		gap: 1rem;
 		margin-top: 1.5rem;
 	}
-	
+
 	.error-message {
 		color: #ff6b6b;
 		background-color: rgba(255, 107, 107, 0.1);

@@ -1,11 +1,8 @@
-<!-- /routes/barbero/citas/+page.svelte -->
-
 <script>
 	import { onMount } from 'svelte';
 	import { authStore } from '$lib/stores/authStore';
-	// Importamos todo lo que necesitamos, incluidas las nuevas funciones
 	import { obtenerCitasDeBarbero, actualizarEstadoCita, eliminarCita } from '$lib/api/citas.js';
-	import { fly } from 'svelte/transition'; // Para una animación bonita al eliminar
+	import { fly } from 'svelte/transition';
 
 	let citas = [];
 	let isLoading = true;
@@ -21,9 +18,8 @@
 
 		try {
 			const todasLasCitas = await obtenerCitasDeBarbero(idBarbero);
-			citas = todasLasCitas.filter(
-				(c) => !['Realizada', 'Cancelada', 'Completada'].includes(c.estado)
-			);
+			// ✅ 1. Filtro corregido y simplificado
+			citas = todasLasCitas.filter((c) => !['Realizada', 'Cancelada'].includes(c.estado));
 		} catch (e) {
 			error = `Error al cargar las citas: ${e.message}`;
 		} finally {
@@ -31,13 +27,15 @@
 		}
 	});
 
-	// --- Handlers para las nuevas acciones ---
-	async function handleMarcarCompletada(idCita) {
+	// ✅ 2. Nombre de función y lógica corregida
+	async function handleMarcarRealizada(idCita) {
 		try {
-			await actualizarEstadoCita(idCita, 'Completada');
-			citas = citas.filter((c) => c.id !== idCita); // Actualiza la UI al instante
+			// ✅ ¡LA CORRECCIÓN CLAVE!
+			await actualizarEstadoCita(idCita, 'Realizada');
+			citas = citas.filter((c) => c.id !== idCita);
 		} catch (err) {
-			alert(`Error al marcar la cita como completada: ${err.message}`);
+			// Mensaje de alerta actualizado para consistencia
+			alert(`Error al marcar la cita como realizada: ${err.message}`);
 		}
 	}
 
@@ -45,15 +43,13 @@
 		if (!confirm('¿Estás seguro de que quieres eliminar esta cita?')) return;
 		try {
 			await eliminarCita(idCita);
-			citas = citas.filter((c) => c.id !== idCita); // Actualiza la UI
+			citas = citas.filter((c) => c.id !== idCita);
 		} catch (err) {
 			alert(`Error al eliminar la cita: ${err.message}`);
 		}
 	}
 
-	// Helper para agrupar y mostrar fechas
 	$: citasAgrupadas = citas.reduce((acc, cita) => {
-		// Ahora usamos cita.fechaHora que ya viene formateado correctamente!
 		const fecha = new Date(cita.fechaHora).toDateString();
 		if (!acc[fecha]) acc[fecha] = [];
 		acc[fecha].push(cita);
@@ -106,19 +102,13 @@
 						<div class="card-footer">
 							<span class="duracion-total">{cita.duracionTotalMinutos} min</span>
 							<div class="acciones-cita">
+								<!-- ✅ 3. Texto del 'title' y llamada a la función corregidos -->
 								<button
 									class="btn-accion btn-completar"
-									title="Marcar como Completada"
-									on:click={() => handleMarcarCompletada(cita.id)}
+									title="Marcar como Realizada"
+									on:click={() => handleMarcarRealizada(cita.id)}
 								>
 									✔️
-								</button>
-								<button
-									class="btn-accion btn-eliminar"
-									title="Eliminar Cita"
-									on:click={() => handleEliminarCita(cita.id)}
-								>
-									❌
 								</button>
 							</div>
 						</div>

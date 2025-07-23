@@ -48,16 +48,12 @@
 
 	// --- FUNCIONES ---
 
-	// En +page.svelte
-
 	async function cargarDatosIniciales() {
 		try {
 			cargando = true;
 			const resultados = await Promise.all([obtenerBarberos(), obtenerEspecialidadesDisponibles()]);
 
-			// --- ¡AÑADE ESTA LÍNEA DE DEPURACIÓN! ---
 			console.log('Barberos recibidos desde la API:', resultados[0]);
-			// ------------------------------------------
 
 			barberos = resultados[0];
 			especialidadesDisponibles = resultados[1];
@@ -71,7 +67,6 @@
 
 	async function crearNuevoBarbero() {
 		try {
-			// <-- CORREGIDO: Añadimos el ID del rol de Barbero (ajústalo si es diferente)
 			await crearBarbero(nuevoBarbero, 1);
 			mostrarModalCrearBarbero = false;
 			nuevoBarbero = {
@@ -102,12 +97,8 @@
 		mostrarModalAsignar = true;
 
 		try {
-			// <-- CORREGIDO: Usamos la función correcta
 			const actuales = await obtenerEspecialidadesDeBarbero(barbero.id);
-
-			// Asumimos que la API devuelve un array de objetos con la propiedad 'id'
 			const idsActuales = actuales.map((e) => e.id);
-
 			especialidadesSeleccionadas = idsActuales;
 		} catch (error) {
 			console.error('Error obteniendo especialidades del barbero:', error);
@@ -125,7 +116,6 @@
 
 	async function guardarAsignacionEspecialidades() {
 		try {
-			// <-- CORREGIDO: Usamos la función correcta de la API
 			await actualizarEspecialidadesDeBarbero(barberoActual.id, especialidadesSeleccionadas);
 			mostrarModalAsignar = false;
 		} catch (error) {
@@ -141,10 +131,7 @@
 		especialidadesDelBarbero = [];
 
 		try {
-			// <-- CORREGIDO: Usamos la función correcta
 			const data = await obtenerEspecialidadesDeBarbero(barbero.id);
-
-			// Asumimos que la API devuelve un array de objetos
 			especialidadesDelBarbero = data;
 		} catch (error) {
 			console.error('Error al cargar especialidades para ver:', error);
@@ -152,7 +139,7 @@
 		}
 	}
 
-	// ---- LÓGICA DEL NUEVO MODAL DE GESTIÓN (sin cambios) ----
+	// ---- LÓGICA DEL NUEVO MODAL DE GESTIÓN ----
 	async function abrirModalGestion() {
 		especialidadesDisponibles = await obtenerEspecialidadesDisponibles();
 		mostrarModalGestionEspecialidades = true;
@@ -172,7 +159,6 @@
 		}
 	}
 
-	// UBICADO EN +page.svelte (¡ESTA ES LA VERSIÓN CORREGIDA!)
 	async function eliminarEspecialidadConfirmada(id) {
 		if (
 			confirm(
@@ -180,22 +166,12 @@
 			)
 		) {
 			try {
-				// 1. Intentamos ejecutar la operación de borrado.
 				await eliminarEspecialidad(id);
-
-				// 2. Si la línea de arriba NO lanzó un error, significa que tuvo éxito.
-				//    Procedemos a recargar la lista de especialidades.
 				especialidadesDisponibles = await obtenerEspecialidadesDisponibles();
-
-				// Opcional: Puedes añadir una alerta de éxito para una mejor experiencia.
 				alert('¡La especialidad ha sido eliminada correctamente!');
 			} catch (error) {
-				// 3. Si la línea "await eliminarEspecialidad(id)" falló, el código salta
-				//    directamente a este bloque CATCH.
-
-				//    "error.message" contiene el mensaje que enviaste desde tu backend.
-				console.error(error); // Es bueno mantener el log para depuración
-				alert(error.message); // ¡Aquí le mostramos el mensaje amigable al usuario!
+				console.error(error);
+				alert(error.message);
 			}
 		}
 	}
@@ -203,6 +179,21 @@
 		cargarDatosIniciales();
 	});
 </script>
+
+<!-- === NAVBAR AÑADIDA === -->
+<nav class="top">
+	<label for="menu-toggle" class="menu-icon">
+		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+	</label>
+	<div class="logo">
+		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+	</div>
+	<div class="salir">
+		<a href="/admin/1-paneladmin" title="Cerrar Sesión">
+			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+		</a>
+	</div>
+</nav>
 
 <main class="contenido-admin">
 	<div class="header-principal">
@@ -262,9 +253,7 @@
 		</div>
 	{/if}
 
-	<!-- ============================================== -->
-	<!-- === MODAL 1: CREAR NUEVO BARBERO ============= -->
-	<!-- ============================================== -->
+	<!-- MODALES (sin cambios) -->
 	{#if mostrarModalCrearBarbero}
 		<div class="modal-overlay" on:click|self={() => (mostrarModalCrearBarbero = false)}>
 			<div class="modal-contenido">
@@ -299,9 +288,6 @@
 		</div>
 	{/if}
 
-	<!-- ============================================================== -->
-	<!-- === MODAL 2: ASIGNAR ESPECIALIDADES A UN BARBERO ============= -->
-	<!-- ============================================================== -->
 	{#if mostrarModalAsignar}
 		<div class="modal-overlay" on:click|self={() => (mostrarModalAsignar = false)}>
 			<div class="modal-contenido">
@@ -333,14 +319,10 @@
 		</div>
 	{/if}
 
-	<!-- ======================================================== -->
-	<!-- === MODAL 3: VER ESPECIALIDADES DEL BARBERO ============ -->
-	<!-- ======================================================== -->
 	{#if mostrarModalVer && barberoActual}
 		<div class="modal-overlay" on:click|self={() => (mostrarModalVer = false)}>
 			<div class="modal-contenido">
 				<h2 class="modal-titulo">Especialidades de {barberoActual.primerNombre}</h2>
-
 				{#if especialidadesDelBarbero.especialidades && especialidadesDelBarbero.especialidades.length > 0}
 					<ul class="lista-simple">
 						{#each especialidadesDelBarbero.especialidades as especialidad (especialidad)}
@@ -350,7 +332,6 @@
 				{:else}
 					<p class="mensaje-vacio">Este barbero aún no tiene especialidades asignadas.</p>
 				{/if}
-
 				<div class="modal-acciones">
 					<button class="boton-accion primario" on:click={() => (mostrarModalVer = false)}
 						>Cerrar</button
@@ -360,9 +341,6 @@
 		</div>
 	{/if}
 
-	<!-- ============================================================== -->
-	<!-- === MODAL 4: GESTIONAR ESPECIALIDADES GLOBALES =============== -->
-	<!-- ============================================================== -->
 	{#if mostrarModalGestionEspecialidades}
 		<div class="modal-overlay" on:click|self={() => (mostrarModalGestionEspecialidades = false)}>
 			<div class="modal-contenido" style="max-width: 600px;">
@@ -416,6 +394,49 @@
 </main>
 
 <style>
+	/* --- ESTILOS DE NAVBAR AÑADIDOS --- */
+	nav.top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 2rem;
+		background-color: var(--color-fondo);
+		border-bottom: 1px solid var(--color-borde);
+		box-shadow: var(--sombra-suave);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+
+	.logo img {
+		height: 50px;
+		vertical-align: middle;
+	}
+
+	.menu-icon,
+	.salir {
+		display: flex;
+		align-items: center;
+	}
+
+	.menu-icon img,
+	.salir img {
+		height: 24px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+	.menu-icon:hover img,
+	.salir a:hover img {
+		opacity: 0.8;
+	}
+
+	@media (min-width: 768px) {
+		.menu-icon {
+			display: none;
+		}
+	}
+	/* --- FIN DE ESTILOS DE NAVBAR --- */
+
 	/* --- VARIABLES Y ESTILOS GLOBALES --- */
 	:root {
 		--color-primario: #c0a080;

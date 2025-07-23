@@ -17,7 +17,7 @@
 			// Convertimos el string 'YYYY-MM-DD' a un objeto Date para la API
 			const [year, month, day] = fechaInput.split('-').map(Number);
 			const fechaParaAPI = new Date(year, month - 1, day);
-			
+
 			// 👇 CAMBIO CLAVE: Llamamos a la función correcta, sin pasarle ningún ID de usuario
 			citas = await obtenerTodasLasCitasPorFecha(fechaParaAPI);
 		} catch (e) {
@@ -40,6 +40,21 @@
 	}
 </script>
 
+<!-- === NAVBAR AÑADIDA === -->
+<nav class="top">
+	<label for="menu-toggle" class="menu-icon">
+		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+	</label>
+	<div class="logo">
+		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+	</div>
+	<div class="salir">
+		<a href="/admin/1-paneladmin" title="Cerrar Sesión">
+			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+		</a>
+	</div>
+</nav>
+
 <main class="contenido-agenda">
 	<div class="header-agenda">
 		<h1 class="titulo-principal">Agenda General de Citas</h1>
@@ -55,9 +70,13 @@
 		<p class="mensaje-error">{error}</p>
 	{:else if citas.length === 0}
 		<div class="agenda-vacia">
-			<img src="/icons/calendar-check.svg" alt="Calendario vacío" style="width: 80px; margin-bottom: 1rem; filter: invert(75%);"/>
+			<img
+				src="/icons/calendar-check.svg"
+				alt="Calendario vacío"
+				style="width: 80px; margin-bottom: 1rem; filter: invert(75%);"
+			/>
 			<h2>No hay citas programadas para esta fecha</h2>
-            <p>Selecciona otro día en el calendario.</p>
+			<p>Selecciona otro día en el calendario.</p>
 		</div>
 	{:else}
 		<div class="grid-citas">
@@ -71,24 +90,68 @@
 
 					<div class="card-body">
 						<div class="info-item">
-                            <span class="info-label">Barbero:</span>
-                            <span class="info-value">{cita.nombreBarbero}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Cliente:</span>
-                            <span class="info-value">{cita.nombreCliente}</span>
-                        </div>
+							<span class="info-label">Barbero:</span>
+							<span class="info-value">{cita.nombreBarbero}</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Cliente:</span>
+							<span class="info-value">{cita.nombreCliente}</span>
+						</div>
 					</div>
-                    <div class="card-footer">
-                        <p class="info-adicional">Duración: {cita.duracionTotalMinutos} min</p>
-                    </div>
+					<div class="card-footer">
+						<p class="info-adicional">Duración: {cita.duracionTotalMinutos} min</p>
+					</div>
 				</div>
 			{/each}
 		</div>
 	{/if}
 </main>
+```
 
 <style>
+	/* --- ESTILOS DE NAVBAR AÑADIDOS --- */
+	nav.top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 2rem;
+		background-color: #1f1f1f;
+		border-bottom: 1px solid #444;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+
+	.logo img {
+		height: 50px;
+		vertical-align: middle;
+	}
+
+	.menu-icon,
+	.salir {
+		display: flex;
+		align-items: center;
+	}
+
+	.menu-icon img,
+	.salir img {
+		height: 24px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+	.menu-icon:hover img,
+	.salir a:hover img {
+		opacity: 0.8;
+	}
+
+	@media (min-width: 768px) {
+		.menu-icon {
+			display: none;
+		}
+	}
+	/* --- FIN DE ESTILOS DE NAVBAR --- */
+
 	/* --- VARIABLES DE COLOR PARA CONSISTENCIA --- */
 	:root {
 		--color-primario: #c0a080;
@@ -96,7 +159,7 @@
 		--color-superficie: #2f2f2f;
 		--color-texto-principal: #ffffff;
 		--color-texto-secundario: #a0a0a0;
-		
+
 		--estado-confirmada: #4caf50;
 		--estado-pendiente: #ffc107;
 		--estado-cancelada: #f44336;
@@ -158,7 +221,8 @@
 	}
 
 	/* --- ESTADOS (CARGANDO, ERROR, VACÍO) --- */
-	.mensaje-estado, .mensaje-error {
+	.mensaje-estado,
+	.mensaje-error {
 		text-align: center;
 		font-size: 1.2rem;
 		padding: 3rem 1rem;
@@ -181,16 +245,16 @@
 		justify-content: center;
 		gap: 0.5rem;
 	}
-    
-    .agenda-vacia h2 {
-        color: #eee;
-        margin: 0;
-    }
 
-    .agenda-vacia p {
-        color: var(--color-texto-secundario);
-        margin: 0;
-    }
+	.agenda-vacia h2 {
+		color: #eee;
+		margin: 0;
+	}
+
+	.agenda-vacia p {
+		color: var(--color-texto-secundario);
+		margin: 0;
+	}
 
 	/* --- GRID DE CITAS --- */
 	.grid-citas {
@@ -207,7 +271,9 @@
 		display: flex;
 		flex-direction: column;
 		box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-		transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+		transition:
+			transform 0.2s ease-in-out,
+			box-shadow 0.2s ease-in-out;
 	}
 
 	.card-cita:hover {
@@ -216,10 +282,18 @@
 	}
 
 	/* Asignación de color de borde por estado */
-	.card-cita.estado-confirmada { border-left-color: var(--estado-confirmada); }
-	.card-cita.estado-pendiente { border-left-color: var(--estado-pendiente); }
-	.card-cita.estado-cancelada { border-left-color: var(--estado-cancelada); }
-	.card-cita.estado-completada { border-left-color: var(--estado-completada); }
+	.card-cita.estado-confirmada {
+		border-left-color: var(--estado-confirmada);
+	}
+	.card-cita.estado-pendiente {
+		border-left-color: var(--estado-pendiente);
+	}
+	.card-cita.estado-cancelada {
+		border-left-color: var(--estado-cancelada);
+	}
+	.card-cita.estado-completada {
+		border-left-color: var(--estado-completada);
+	}
 
 	.card-header {
 		display: flex;
@@ -243,49 +317,58 @@
 		text-transform: uppercase;
 		color: #fff;
 	}
-    
-    /* Colores de fondo para las etiquetas de estado */
-    .estado-confirmada .estado-cita { background-color: var(--estado-confirmada); }
-    .estado-pendiente .estado-cita { background-color: var(--estado-pendiente); color: #1e1e1e;}
-    .estado-cancelada .estado-cita { background-color: var(--estado-cancelada); }
-    .estado-completada .estado-cita { background-color: var(--estado-completada); }
+
+	/* Colores de fondo para las etiquetas de estado */
+	.estado-confirmada .estado-cita {
+		background-color: var(--estado-confirmada);
+	}
+	.estado-pendiente .estado-cita {
+		background-color: var(--estado-pendiente);
+		color: #1e1e1e;
+	}
+	.estado-cancelada .estado-cita {
+		background-color: var(--estado-cancelada);
+	}
+	.estado-completada .estado-cita {
+		background-color: var(--estado-completada);
+	}
 
 	.card-body {
 		padding: 1.25rem;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.8rem;
+		flex-grow: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
 	}
 
-    .info-item {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .info-label {
-        font-size: 0.8rem;
-        color: var(--color-texto-secundario);
-        margin-bottom: 0.1rem;
-    }
-    
-    .info-value {
-        font-size: 1.1rem;
-        font-weight: 500;
-        color: #eee;
-    }
+	.info-item {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.info-label {
+		font-size: 0.8rem;
+		color: var(--color-texto-secundario);
+		margin-bottom: 0.1rem;
+	}
+
+	.info-value {
+		font-size: 1.1rem;
+		font-weight: 500;
+		color: #eee;
+	}
 
 	.card-footer {
-        padding: 0.75rem 1.25rem;
-        background-color: rgba(0,0,0,0.2);
-        border-top: 1px solid #444;
-        border-radius: 0 0 10px 10px;
-    }
+		padding: 0.75rem 1.25rem;
+		background-color: rgba(0, 0, 0, 0.2);
+		border-top: 1px solid #444;
+		border-radius: 0 0 10px 10px;
+	}
 
 	.info-adicional {
 		font-size: 0.9rem;
 		color: var(--color-texto-secundario);
-        text-align: right;
+		text-align: right;
 		margin: 0;
 	}
 </style>

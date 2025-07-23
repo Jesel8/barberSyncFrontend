@@ -1,16 +1,13 @@
-<!-- ================================================================= -->
-<!-- === CÓDIGO FINAL PARA LA TABLA DE GESTIÓN DE RESEÑAS (SVELTE) === -->
-<!-- ================================================================= -->
 <script>
 	import { onMount } from 'svelte';
 	import { obtenerTodasLasResenas, eliminarResena } from '$lib/api/resenas.js';
 
-	// --- ESTADO DEL COMPONENTE (sin cambios) ---
+	// --- ESTADO DEL COMPONENTE ---
 	let resenas = [];
 	let isLoading = true;
 	let error = null;
 
-	// --- LÓGICA (sin cambios) ---
+	// --- LÓGICA ---
 	onMount(() => {
 		cargarResenas();
 	});
@@ -20,7 +17,6 @@
 			isLoading = true;
 			error = null;
 			resenas = await obtenerTodasLasResenas();
-			// Log para verificar que el campo 'fechaResena' llega correctamente
 			console.log('Reseñas recibidas del backend:', resenas);
 		} catch (e) {
 			console.error('Error al cargar las reseñas:', e);
@@ -47,6 +43,21 @@
 	}
 </script>
 
+<!-- === NAVBAR AÑADIDA === -->
+<nav class="top">
+	<label for="menu-toggle" class="menu-icon">
+		<img src="/src/static/assets/icons/Menu.svg" alt="Menu Icon" />
+	</label>
+	<div class="logo">
+		<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+	</div>
+	<div class="salir">
+		<a href="/admin/1-paneladmin" title="Cerrar Sesión">
+			<img src="/src/static/assets/icons/Salir.svg" alt="Cerrar Sesión" />
+		</a>
+	</div>
+</nav>
+
 <main>
 	<h1>Gestión de Opiniones y Reseñas</h1>
 
@@ -69,19 +80,12 @@
 				</tr>
 			</thead>
 			<tbody>
-				<!-- ================================================ -->
-				<!-- ✅ CORRECCIÓN #1: Usamos 'fechaResena' para ordenar -->
-				<!-- ================================================ -->
 				{#each resenas.sort((a, b) => new Date(b.fechaResena) - new Date(a.fechaResena)) as resena (resena.id)}
 					<tr>
 						<td>{resena.nombreCliente}</td>
 						<td>{resena.nombreBarbero}</td>
 						<td class="estrellas">{renderEstrellas(resena.calificacion)}</td>
 						<td class="comentario-celda">{resena.comentario || '-'}</td>
-
-						<!-- ================================================== -->
-						<!-- ✅ CORRECCIÓN #2: Usamos 'fechaResena' para mostrar -->
-						<!-- ================================================== -->
 						<td>
 							{new Date(resena.fechaResena).toLocaleDateString('es-MX', {
 								year: 'numeric',
@@ -89,7 +93,6 @@
 								day: 'numeric'
 							})}
 						</td>
-
 						<td class="acciones-celda">
 							<button
 								class="btn-accion btn-delete"
@@ -106,7 +109,49 @@
 </main>
 
 <style>
-	/* Usaremos estilos muy similares a los de la tabla de servicios para mantener la consistencia */
+	/* --- ESTILOS DE NAVBAR AÑADIDOS --- */
+	nav.top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 2rem;
+		background-color: #1f1f1f;
+		border-bottom: 1px solid #444;
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+		position: sticky;
+		top: 0;
+		z-index: 10;
+	}
+
+	.logo img {
+		height: 50px;
+		vertical-align: middle;
+	}
+
+	.menu-icon,
+	.salir {
+		display: flex;
+		align-items: center;
+	}
+
+	.menu-icon img,
+	.salir img {
+		height: 24px;
+		cursor: pointer;
+		transition: opacity 0.2s;
+	}
+	.menu-icon:hover img,
+	.salir a:hover img {
+		opacity: 0.8;
+	}
+
+	@media (min-width: 768px) {
+		.menu-icon {
+			display: none;
+		}
+	}
+	/* --- FIN DE ESTILOS DE NAVBAR --- */
+
 	main {
 		max-width: 1100px;
 		margin: 2rem auto;
