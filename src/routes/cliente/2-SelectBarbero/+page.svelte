@@ -1,4 +1,7 @@
 <script>
+	import '$lib/styles/Global.css';
+	import '$lib/styles/nav.css';
+	import '$lib/styles/pasos.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	// ✅ Importamos AMBAS funciones: para obtener la lista y para obtener las especialidades de CADA uno
@@ -57,13 +60,25 @@
 <main class="contenedor-principal">
 	<nav class="top">
 		<div class="logo">
-			<img src="/images/logo blanco.png" alt="Logo BarberSync" />
+			<a href="/cliente/panel">
+				<!-- Hacemos el logo un enlace al panel -->
+				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+			</a>
 		</div>
 	</nav>
 
-	<div class="paso-indicador">Paso 1 de 4</div>
-	<h1>Selecciona tu Barbero</h1>
-	<p class="subtitulo">Elige al profesional que prefieras para tu servicio.</p>
+	<h1 class="titulo-panel">Selecciona tu Barbero</h1>
+	<div class="barra-progreso-container">
+		<div class="barra-etiquetas">
+			<span class="activo">Barberos</span>
+			<span>Servicios</span>
+			<span>Fecha y Hora</span>
+			<span>Completado</span>
+		</div>
+		<div class="barra-fondo">
+			<div class="barra-avance paso-1"></div>
+		</div>
+	</div>
 
 	{#if isLoading}
 		<div class="spinner"></div>
@@ -100,16 +115,12 @@
 
 <style>
 	/* ... Tus estilos existentes ... */
-	.contenedor-principal {
-		max-width: 900px;
-		margin: 2rem auto;
-		padding: 2rem;
+	.titulo-panel {
 		text-align: center;
-	}
-	.paso-indicador {
-		color: #c0a080;
+		font-size: 2.5rem;
+		margin-top: 4rem;
+		margin-bottom: 1rem;
 		font-weight: bold;
-		margin-bottom: 0.5rem;
 	}
 	h1 {
 		color: #f0f0f0;

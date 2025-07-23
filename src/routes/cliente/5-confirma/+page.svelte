@@ -1,4 +1,7 @@
 <script>
+	import '$lib/styles/Global.css';
+	import '$lib/styles/nav.css';
+	import '$lib/styles/pasos.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { citaStore } from '$lib/stores/citaStore.js';
@@ -60,8 +63,26 @@
 </script>
 
 <main class="contenedor-principal">
-	<div class="paso-indicador">Paso 4 de 4</div>
-	<h1>Confirma tu Cita</h1>
+				<nav class="top">
+		<div class="logo">
+			<a href="/cliente/panel">
+				<!-- Hacemos el logo un enlace al panel -->
+				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+			</a>
+		</div>
+	</nav>
+	<h1 class="titulo-panel">Confirma tu Cita</h1>
+		<div class="barra-progreso-container">
+		<div class="barra-etiquetas">
+			<span>Barberos</span>
+			<span>Servicios</span>
+			<span >Fecha y Hora</span>
+			<span class="activo">Completado</span>
+		</div>
+		<div class="barra-fondo">
+			<div class="barra-avance paso-4"></div>
+		</div>
+	</div>
 
 	{#if reserva.barberoSeleccionado}
 		<div class="contenedor-resumen">
@@ -118,12 +139,14 @@
 </main>
 
 <style>
-	.contenedor-principal {
-		max-width: 800px;
-		margin: 2rem auto;
-		padding: 2rem;
-		color: #f0f0f0;
+		.titulo-panel {
+		text-align: center;
+		font-size: 2.5rem;
+		margin-top: 4rem;
+		margin-bottom: 1rem;
+		font-weight: bold;
 	}
+
 	h1 {
 		text-align: center;
 		color: #cfa980;

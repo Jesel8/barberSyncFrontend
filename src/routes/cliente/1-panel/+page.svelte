@@ -39,7 +39,7 @@
 	<section class="panel-usuario">
 		<a href="/cliente/2-SelectBarbero" class="card-opcion">
 			<div class="card-icon-background">
-				<img src="src/static/assets/icons/calendartwo.svg" alt="Agendar" />
+				<img src="/src/static/assets/icons/calendartwo.svg" alt="Agendar" />
 			</div>
 			<h3>Agendar Cita</h3>
 			<p>Explora servicios y reserva tu próximo corte.</p>
@@ -47,7 +47,7 @@
 
 		<a href="/cliente/Historial" class="card-opcion">
 			<div class="card-icon-background">
-				<img src="src/static/assets/icons/calendarone.svg" alt="Historial" />
+				<img src="/src/static/assets/icons/calendarone.svg" alt="Historial" />
 			</div>
 			<h3>Mis Citas</h3>
 			<p>Consulta el historial y los detalles de tus citas.</p>
@@ -60,10 +60,7 @@
 		<a href="/info/contacto" class="card-opcion">
 			<div class="card-icon-background">
 				<!-- Se recomienda un icono de mapa o teléfono -->
-				<img
-					src="https/api.iconify.design/material-symbols:location-on.svg?color=%23c0a080"
-					alt="Contacto"
-				/>
+			<img src="/src/static/assets/icons/phone-call.svg" alt="ayuda" />
 			</div>
 			<h3>Ubicación y Contacto</h3>
 			<p>Encuentra nuestras sucursales y contáctanos.</p>
@@ -94,12 +91,12 @@
 	}
 
 	/* Título del panel */
-	.titulo-panel {
+			.titulo-panel {
 		text-align: center;
-		font-size: 2.8rem;
-		margin-top: 2rem;
-		margin-bottom: 3rem;
-		font-weight: 300; /* Hacemos más ligero el texto base */
+		font-size: 2.5rem;
+		margin-top: 3rem;
+		margin-bottom: 1rem;
+		font-weight: bold;
 	}
 	.titulo-panel span {
 		font-weight: 700;

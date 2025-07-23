@@ -91,7 +91,7 @@
 		<section class="grid-cards">
 			<div class="card">
 				<img
-					src="https://cdn-icons-png.flaticon.com/128/3039/3039407.png"
+					src="/src/static/assets/icons/Barbers.svg"
 					alt="Icono de Barberos"
 				/>
 				<div class="card-content">
@@ -101,7 +101,7 @@
 			</div>
 			<div class="card">
 				<img
-					src="https://cdn-icons-png.flaticon.com/128/2942/2942911.png"
+					src="/src/static/assets/icons/Services.svg"
 					alt="Icono de Servicios"
 				/>
 				<div class="card-content">
@@ -110,7 +110,7 @@
 				</div>
 			</div>
 			<div class="card">
-				<img src="https://cdn-icons-png.flaticon.com/128/10736/10736087.png" alt="Icono de Citas" />
+				<img src="/src/static/assets/icons/Citas.svg" alt="Icono de Citas" />
 				<div class="card-content">
 					<h3>Citas Totales</h3>
 					<p>{totalCitas}</p>
@@ -118,7 +118,7 @@
 			</div>
 			<div class="card">
 				<img
-					src="https://cdn-icons-png.flaticon.com/128/2462/2462719.png"
+					src="/src/static/assets/icons/Opinion.svg"
 					alt="Icono de Opiniones"
 				/>
 				<div class="card-content">
