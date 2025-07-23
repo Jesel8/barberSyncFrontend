@@ -71,23 +71,24 @@
 		<p class="error-message">{error}</p>
 	{:else}
 		<div class="grid-barberos">
+			<!-- Reemplaza tu bloque #each con este -->
 			{#each barberos as barbero (barbero.id)}
 				<button class="card-barbero" on:click={() => handleSeleccionarBarbero(barbero)}>
+					<!-- ✅ LA LÍNEA CLAVE CORREGIDA -->
 					<img
-						src="/icons/userfoto.svg"
+						src={barbero.urlImagen || '/icons/userfoto.svg'}
 						alt="Foto de {barbero.primerNombre}"
 						class="foto-barbero"
 					/>
+
 					<span class="nombre-barbero">{barbero.primerNombre} {barbero.primerApellido}</span>
 
-					<!-- ✅ AQUÍ MOSTRAMOS LAS ESPECIALIDADES -->
 					<div class="especialidades-container">
 						{#if barbero.especialidades && barbero.especialidades.length > 0}
 							{#each barbero.especialidades as especialidad (especialidad)}
 								<span class="especialidad-tag">{especialidad}</span>
 							{/each}
 						{:else}
-							<!-- Opcional: mostrar un texto si no tiene especialidades -->
 							<span class="sin-especialidades">Generalista</span>
 						{/if}
 					</div>
@@ -203,5 +204,14 @@
 		color: #888;
 		font-style: italic;
 		font-size: 0.9rem;
+	}
+	.foto-barbero {
+		width: 100px;
+		height: 100px;
+		border-radius: 50%;
+		background-color: #4a4a4a;
+		border: 3px solid #c0a080;
+		flex-shrink: 0;
+		object-fit: cover; /* ✅ AÑADE ESTA LÍNEA */
 	}
 </style>

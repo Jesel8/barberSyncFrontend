@@ -3,33 +3,43 @@
 	import { authStore } from '$lib/stores/authStore';
 
 	// ========================================================================
-	// ✅ IMPORTAMOS LAS FUNCIONES EXACTAS QUE NOS PROPORCIONASTE
+	// ✅ 1. IMPORTAMOS LA NUEVA FUNCIÓN PARA SUBIR LA IMAGEN
 	// ========================================================================
-	import { obtenerPerfilUsuario, actualizarPerfilUsuario } from '$lib/api/usuarios.js';
+	import {
+		obtenerPerfilUsuario,
+		actualizarPerfilUsuario,
+		subirImagenPerfil // <-- Nueva función importada
+	} from '$lib/api/usuarios.js';
 	import {
 		obtenerEspecialidadesDeBarbero,
 		actualizarEspecialidadesDeBarbero
 	} from '$lib/api/barberos.js';
 	import { obtenerEspecialidadesDisponibles } from '$lib/api/especialidades.js';
 
-	// --- ESTADO DEL PERFIL ---
+	// --- ESTADO DEL PERFIL (Sin cambios) ---
 	let barbero = null;
 	let especialidadesActuales = [];
 	let isLoading = true;
 	let error = null;
 
-	// --- ESTADO DE EDICIÓN DEL PERFIL ---
+	// --- ESTADO DE EDICIÓN DEL PERFIL (Sin cambios) ---
 	let modoEdicionPerfil = false;
 	let perfilEditable = {};
 
-	// --- ESTADO DEL MODAL DE ESPECIALIDADES ---
+	// --- ESTADO DEL MODAL DE ESPECIALIDADES (Sin cambios) ---
 	let mostrarModalEspecialidades = false;
 	let especialidadesDisponibles = [];
 	let especialidadesSeleccionadas = new Set();
 
-	// Obtenemos el ID del usuario logueado desde el store
+	// ✅ 2. AÑADIMOS NUEVO ESTADO PARA LA SUBIDA DE LA FOTO
+	let archivoSeleccionado = null; // Guardará el objeto File que el usuario elija
+	let isUploading = false; // Controla el estado de carga para deshabilitar botones
+	let inputArchivoFoto; // Referencia al <input type="file"> oculto
+
+	// --- Obtenemos el ID del usuario (Sin cambios) ---
 	const idBarbero = $authStore.usuario?.idUsuario;
 
+	// --- onMount (Sin cambios) ---
 	onMount(async () => {
 		if (!idBarbero) {
 			error = 'No se pudo identificar al barbero. Por favor, inicia sesión.';
@@ -37,15 +47,12 @@
 			return;
 		}
 		try {
-			// Cargamos todos los datos necesarios en paralelo
 			const [perfilData, especialidadesData, catalogoData] = await Promise.all([
 				obtenerPerfilUsuario(idBarbero),
 				obtenerEspecialidadesDeBarbero(idBarbero),
 				obtenerEspecialidadesDisponibles()
 			]);
-
 			barbero = perfilData;
-			// La API devuelve un objeto con una propiedad 'especialidades' que es un array
 			especialidadesActuales = especialidadesData.especialidades || [];
 			especialidadesDisponibles = catalogoData;
 		} catch (e) {
@@ -56,7 +63,7 @@
 		}
 	});
 
-	// --- MANEJADORES DE EVENTOS ---
+	// --- MANEJADORES DE EVENTOS (Funciones existentes sin cambios) ---
 
 	function activarModoEdicion() {
 		perfilEditable = { ...barbero };
@@ -65,25 +72,15 @@
 
 	async function guardarCambiosPerfil() {
 		try {
-			// ✅ Construimos el payload completo y válido
 			const payload = {
 				primerNombre: perfilEditable.primerNombre,
 				segundoNombre: perfilEditable.segundoNombre || null,
 				primerApellido: perfilEditable.primerApellido,
 				segundoApellido: perfilEditable.segundoApellido || null,
-
-				// 👇 Obligatorio según validación backend
 				correo: barbero.correo,
-
-				// 👇 Truco para pasar validación sin cambiar la real
 				contrasena: 'password_falsa_para_validar'
 			};
-
-			console.log('Enviando este payload al backend:', payload);
-
 			const perfilActualizado = await actualizarPerfilUsuario(idBarbero, payload);
-
-			// ✅ Si todo sale bien, actualizamos y salimos del modo edición
 			barbero = perfilActualizado;
 			modoEdicionPerfil = false;
 			alert('¡Tu perfil ha sido actualizado con éxito!');
@@ -94,19 +91,10 @@
 	}
 
 	function abrirModalEspecialidades() {
-		// 1. Creamos un Set con los NOMBRES que el barbero ya tiene (la forma correcta).
-		//    Ejemplo: new Set(['Color', 'Grecas'])
 		const nombresEspecialidadesActuales = new Set(especialidadesActuales);
-
-		// 2. Revisamos el catálogo completo, que es un array de OBJETOS { id, especialidad, ... }
 		const idsActuales = especialidadesDisponibles
-			// Nos quedamos solo con los OBJETOS cuya propiedad 'especialidad' está en nuestro Set de nombres.
 			.filter((esp) => nombresEspecialidadesActuales.has(esp.especialidad))
-			// De esos objetos que sobrevivieron el filtro, extraemos su ID.
 			.map((esp) => esp.id);
-		// El resultado es el array de IDs correcto. Ejemplo: [2, 3]
-
-		// 3. Ahora SÍ, inicializamos nuestro Set para los checkboxes con los IDs correctos.
 		especialidadesSeleccionadas = new Set(idsActuales);
 		mostrarModalEspecialidades = true;
 	}
@@ -114,17 +102,56 @@
 	async function guardarCambiosEspecialidades() {
 		try {
 			const idsParaEnviar = Array.from(especialidadesSeleccionadas);
-			// Usamos la función de la API 'actualizarEspecialidadesDeBarbero'
 			await actualizarEspecialidadesDeBarbero(idBarbero, idsParaEnviar);
-
-			// Refrescamos la lista de especialidades en la vista sin recargar la página
 			const dataActualizada = await obtenerEspecialidadesDeBarbero(idBarbero);
 			especialidadesActuales = dataActualizada.especialidades || [];
-
 			mostrarModalEspecialidades = false;
 			alert('¡Tus especialidades han sido actualizadas!');
 		} catch (e) {
 			alert(`Error al actualizar tus especialidades: ${e.message}`);
+		}
+	}
+
+	// ========================================================================
+	// ✅ 3. AÑADIMOS LAS NUEVAS FUNCIONES PARA MANEJAR LA FOTO DE PERFIL
+	// ========================================================================
+
+	/**
+	 * Se dispara cuando el input de archivo oculto cambia (cuando el usuario elige un archivo).
+	 */
+	function manejarSeleccionDeArchivo(e) {
+		const file = e.target.files[0];
+		if (file) {
+			archivoSeleccionado = file; // Guardamos el archivo en nuestro estado
+		}
+	}
+
+	/**
+	 * Sube el archivo seleccionado al servidor.
+	 */
+	async function subirNuevaFoto() {
+		if (!archivoSeleccionado) {
+			alert('Por favor, selecciona un archivo primero.');
+			return;
+		}
+
+		isUploading = true; // Inicia el estado de carga
+
+		try {
+			// Llama a la función de la API que creamos
+			const perfilActualizado = await subirImagenPerfil(idBarbero, archivoSeleccionado);
+
+			// Si todo sale bien, el backend devuelve el usuario con la nueva `urlImagen`.
+			// Actualizamos nuestro estado local para que Svelte refresque la UI.
+			barbero = perfilActualizado;
+
+			alert('¡Tu foto de perfil ha sido actualizada!');
+			archivoSeleccionado = null; // Limpiamos la selección para ocultar el botón de "Guardar"
+		} catch (e) {
+			console.error('Error al subir la foto:', e);
+			alert(`Error al subir la foto: ${e.message}`);
+		} finally {
+			isUploading = false; // Finaliza el estado de carga (en éxito o error)
 		}
 	}
 </script>
@@ -139,14 +166,66 @@
 		<div class="mensaje-estado error">{error}</div>
 	{:else if barbero}
 		<div class="grid-perfil">
-			<!-- Sección 1: Foto de Perfil (Preparada para Cloudinary) -->
+			<!-- ✅ COPIA Y PEGA TODO ESTE BLOQUE PARA REEMPLAZAR LA SECCIÓN 1 ANTIGUA -->
 			<section class="card-perfil">
 				<h2>Foto de Perfil</h2>
-				<div class="placeholder-foto">
-					<span class="icono-foto">📷</span>
-					<p>Sube una foto para que tus clientes te reconozcan.</p>
+
+				<!-- Input de archivo oculto. Lo activaremos con un botón. -->
+				<input
+					type="file"
+					bind:this={inputArchivoFoto}
+					on:change={manejarSeleccionDeArchivo}
+					accept="image/png, image/jpeg"
+					style="display: none;"
+				/>
+
+				<!-- Contenedor de la imagen. Muestra la imagen actual o un placeholder. -->
+				<div class="contenedor-imagen-perfil">
+					{#if barbero.urlImagen}
+						<!-- Si el usuario tiene una imagen, la mostramos -->
+						<img
+							src={barbero.urlImagen}
+							alt="Foto de perfil de {barbero.primerNombre}"
+							class="imagen-perfil"
+						/>
+					{:else}
+						<!-- Si no, mostramos el placeholder -->
+						<div class="placeholder-foto">
+							<span class="icono-foto">📷</span>
+							<p>¡Añade una foto!</p>
+						</div>
+					{/if}
 				</div>
-				<button class="boton-accion" disabled>Cambiar Foto (Próximamente)</button>
+
+				<!-- Mostramos un preview de la imagen seleccionada ANTES de subirla -->
+				{#if archivoSeleccionado}
+					<div class="preview-info">
+						<p>Nuevo archivo: <span>{archivoSeleccionado.name}</span></p>
+					</div>
+				{/if}
+
+				<!-- Acciones para cambiar y guardar la foto -->
+				<div class="acciones-foto">
+					<!-- Este botón abre el selector de archivos -->
+					<button
+						class="boton-accion secundario"
+						on:click={() => inputArchivoFoto.click()}
+						disabled={isUploading}
+					>
+						Cambiar Foto
+					</button>
+
+					<!-- Este botón solo aparece si hay un archivo seleccionado y lo sube -->
+					{#if archivoSeleccionado}
+						<button class="boton-accion primario" on:click={subirNuevaFoto} disabled={isUploading}>
+							{#if isUploading}
+								Subiendo...
+							{:else}
+								Guardar Foto
+							{/if}
+						</button>
+					{/if}
+				</div>
 			</section>
 
 			<!-- Sección 2: Información Personal -->
@@ -225,7 +304,7 @@
 	{/if}
 </main>
 
-<!-- MODAL PARA GESTIONAR ESPECIALIDADES -->
+<!-- MODAL PARA GESTIONAR ESPECIALIDADES (Sin cambios) -->
 {#if mostrarModalEspecialidades}
 	<div class="modal-overlay" on:click|self={() => (mostrarModalEspecialidades = false)}>
 		<div class="modal-contenido">
@@ -244,7 +323,7 @@
 								} else {
 									especialidadesSeleccionadas.add(esp.id);
 								}
-								especialidadesSeleccionadas = especialidadesSeleccionadas; // Truco para forzar la reactividad de Svelte con el Set
+								especialidadesSeleccionadas = especialidadesSeleccionadas;
 							}}
 						/>
 						<span class="checkbox-label">{esp.especialidad}</span>
@@ -267,7 +346,7 @@
 {/if}
 
 <style>
-	/* Estilos generales de la página */
+	/* Estilos generales de la página (Sin cambios) */
 	.contenedor-perfil {
 		max-width: 1200px;
 		margin: 2rem auto;
@@ -322,21 +401,7 @@
 		transform: scale(1.1);
 	}
 
-	/* Estilos de la tarjeta de foto */
-	.placeholder-foto {
-		text-align: center;
-		padding: 2rem;
-		border: 2px dashed #444;
-		border-radius: 8px;
-		margin-bottom: 1rem;
-		color: #777;
-	}
-	.icono-foto {
-		font-size: 3rem;
-		display: block;
-	}
-
-	/* Estilos del formulario de edición */
+	/* Estilos del formulario de edición (Sin cambios) */
 	.formulario-perfil label {
 		display: flex;
 		flex-direction: column;
@@ -368,7 +433,7 @@
 		margin-top: 1.5rem;
 	}
 
-	/* Estilos de la vista de información */
+	/* Estilos de la vista de información (Sin cambios) */
 	.vista-info p {
 		margin: 1rem 0;
 		color: #ddd;
@@ -378,7 +443,7 @@
 		color: #c0a080;
 	}
 
-	/* Estilos de especialidades */
+	/* Estilos de especialidades (Sin cambios) */
 	.lista-etiquetas {
 		display: flex;
 		flex-wrap: wrap;
@@ -398,7 +463,7 @@
 		font-style: italic;
 	}
 
-	/* Estilos de los botones de acción */
+	/* Estilos de los botones de acción (Sin cambios) */
 	.boton-accion {
 		padding: 0.75rem 1.5rem;
 		border: none;
@@ -427,7 +492,7 @@
 		cursor: not-allowed;
 	}
 
-	/* Estilos de los modales (reutilizados del admin) */
+	/* Estilos de los modales (Sin cambios) */
 	.modal-overlay {
 		position: fixed;
 		top: 0;
@@ -489,5 +554,56 @@
 		margin-top: 2rem;
 		border-top: 1px solid #2c2c2c;
 		padding-top: 1.5rem;
+	}
+
+	/* ========================================================== */
+	/* === ✅✅✅ NUEVOS ESTILOS PARA LA FOTO DE PERFIL ✅✅✅ === */
+	/* ========================================================== */
+
+	.contenedor-imagen-perfil {
+		width: 180px;
+		height: 180px;
+		margin: 0 auto 1.5rem auto;
+		border-radius: 50%;
+		overflow: hidden;
+		border: 4px solid #c0a080;
+		background-color: #2a2a2a;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.imagen-perfil {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.placeholder-foto {
+		text-align: center;
+		color: #777;
+		/* Ajustes para que se vea bien en el círculo */
+		padding: 1rem;
+		border: none;
+		margin: 0;
+		background: none;
+	}
+	.icono-foto {
+		font-size: 3rem;
+		display: block;
+	}
+	.preview-info {
+		text-align: center;
+		color: #ccc;
+		font-style: italic;
+		margin-bottom: 1rem;
+		font-size: 0.9rem;
+	}
+	.preview-info span {
+		font-weight: bold;
+		color: #e0e0e0;
+	}
+	.acciones-foto {
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
 	}
 </style>
