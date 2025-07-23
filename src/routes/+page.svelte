@@ -4,7 +4,6 @@
 	import '$lib/styles/landing.css';
 </script>
 
-<!-- NAVBAR (NO SE TOCA) -->
 <nav class="top">
 	<div class="logo">
 		<img src="\src\static\assets\images\logo blanco.png" alt="Logo BarberSync" />
@@ -178,7 +177,7 @@
 	</div>
 	<div class="footer-right">
 		<p class="powered">Con tecnología de</p>
-		<img src="/images/logo blanco.png" alt="BarberSync" />
-		<p><a href="https://barbersync" target="_blank">www.barbersync.mx</a></p>
+		<img src="\src\static\assets\images\logo blanco.png" alt="BarberSync" />
+		<p><a href="/" target="_blank">www.barbersync.mx</a></p>
 	</div>
 </footer>

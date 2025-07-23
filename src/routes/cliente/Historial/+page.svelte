@@ -1,4 +1,6 @@
 <script>
+	import '$lib/styles/Global.css';
+	import '$lib/styles/nav.css';
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation'; // ✅ Navegación a página de reseña
@@ -64,9 +66,13 @@
 	}
 </script>
 
-<nav class="top">
-	<!-- Tu navegación -->
-</nav>
+				<nav class="top">
+		<div class="logo">
+			<a href="/cliente/panel">
+				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+			</a>
+		</div>
+	</nav>
 
 <h1 class="titulo-panel">Historial de Citas</h1>
 
@@ -125,6 +131,13 @@
 {/if}
 
 <style>
+		.titulo-panel {
+		text-align: center;
+		font-size: 2.5rem;
+		margin-top: 4rem;
+		margin-bottom: 1rem;
+		font-weight: bold;
+	}
 	.contenedor-historial {
 		max-width: 900px;
 		margin: auto;

@@ -1,4 +1,7 @@
 <script>
+	import '$lib/styles/Global.css';
+	import '$lib/styles/nav.css';
+	import '$lib/styles/pasos.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { citaStore } from '$lib/stores/citaStore.js';
@@ -57,9 +60,26 @@
 			Reservando con <strong>{barbero.nombreCompleto}</strong>
 		</div>
 	{/if}
-	<div class="paso-indicador">Paso 2 de 4</div>
-	<h1>Elige tus Servicios</h1>
-	<p class="subtitulo">Puedes seleccionar uno o varios servicios.</p>
+		<nav class="top">
+		<div class="logo">
+			<a href="/cliente/panel">
+				<!-- Hacemos el logo un enlace al panel -->
+				<img src="/src/static/assets/images/logo blanco.png" alt="Logo BarberSync" />
+			</a>
+		</div>
+	</nav>
+	<h1 class="titulo-panel">Elige tus Servicios</h1>
+		<div class="barra-progreso-container">
+		<div class="barra-etiquetas">
+			<span >Barberos</span>
+			<span class="activo">Servicios</span>
+			<span>Fecha y Hora</span>
+			<span>Completado</span>
+		</div>
+		<div class="barra-fondo">
+			<div class="barra-avance paso-2"></div>
+		</div>
+	</div>
 
 	{#if isLoading}
 		<div class="spinner"></div>
@@ -102,10 +122,12 @@
 </main>
 
 <style>
-	.contenedor-principal {
-		max-width: 800px;
-		margin: 2rem auto;
-		padding: 2rem;
+	.titulo-panel {
+		text-align: center;
+		font-size: 2.5rem;
+		margin-top: 4rem;
+		margin-bottom: 1rem;
+		font-weight: bold;
 	}
 	.info-reserva {
 		text-align: center;
