@@ -26,7 +26,7 @@ export async function obtenerResumenDashboard() {
     }
 
     try {
-        // Hacemos todas las peticiones en paralelo para más eficiencia
+      
         const [resUsuarios, resServicios, resCitas, resResenas] = await Promise.all([
             fetch('http://54.197.147.238:8080/api/usuarios', {
                 headers: {
