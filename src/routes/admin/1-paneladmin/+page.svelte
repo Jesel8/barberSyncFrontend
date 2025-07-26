@@ -69,6 +69,7 @@
 				Cargando...
 			{/if}
 		</p>
+		//Menu desplegable.
 	</div>
 	<ul>
 		<li><a href="/Admin/1-paneladmin">🏠 Inicio</a></li>
